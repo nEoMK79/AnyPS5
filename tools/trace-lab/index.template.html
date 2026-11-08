@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
+<title>AnyPS5 · Trace Lab | Performance Analyzer</title>
+<style>__TRACE_LAB_STYLE__</style>
+</head>
+<body>
+<div class="app">
+  <header class="masthead">
+    <div class="brand" dir="ltr"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>ANYPS5 <b>/ TRACE LAB</b></span><span class="version">LOCAL · 01</span></div>
+    <span class="independent">Standalone trace analyzer</span>
+  </header>
+  <section class="hero">
+    <div><div class="eyebrow">PROFILING WORKSPACE</div><h1>Behind every frame</h1><p>Explore slow frames, thread activity and waits on one timeline.</p></div>
+    <div class="hero-actions"><button id="open-files" class="primary">Open capture</button><button id="help-toggle" class="secondary" aria-expanded="false" aria-controls="capture-help">Capture guide</button></div>
+  </section>
+  <input id="file-input" type="file" accept=".json,.jsonl,.gz" multiple hidden aria-label="Select capture files">
+  <section class="source-panel" id="drop-zone" aria-label="Data source">
+    <div class="source-main"><span class="status-dot" aria-hidden="true"></span><div><div class="source-top"><strong id="source-name">Shader compilation demo</strong><span id="source-badge" class="badge demo">Synthetic data</span></div><div id="source-meta" class="small muted">Explore the views with a sample capture</div></div></div>
+    <div class="source-controls"><label for="demo-mode">Demo scenario</label><select id="demo-mode"><option value="compile">Shader compilation stutter</option><option value="cpu">Busy thread</option><option value="gpu">Busy GPU</option><option value="wait">Lock contention</option></select><button id="load-demo" class="secondary compact">Load demo</button></div>
+    <div class="drop-hint">Drop a <bdi>.json / .json.gz</bdi> trace and its companion summary, or <bdi>aps5-summary.jsonl</bdi>, here. Files are processed on this device.</div>
+  </section>
+  <div id="error" class="error" role="alert" hidden></div>
+  <section id="capture-help" class="panel help" hidden>
+    <div class="panel-heading"><div><h2>Record a short capture in AnyPS5</h2><p>Run this in PowerShell from the converted game directory. Replace the executable name with the one for your game.</p></div></div>
+    <pre dir="ltr">$env:APS5_TRACE_SECONDS = '30:10'
+$env:APS5_PROFILE_GPU = '1'
+$env:APS5_TRACE_DIR = (Join-Path $PWD 'trace-output')
+New-Item -ItemType Directory -Force $env:APS5_TRACE_DIR
+.\app.exe</pre>
+    <p>This records a 10-second window starting 30 seconds after the first present. Open the trace and summary from the same run together. If the game exits before the window closes, no trace file is written.</p>
+    <p>For longer sessions, periodic summaries are available with <code dir="ltr">APS5_TRACE_SUMMARY_EVERY=5</code>. They do not contain individual thread events.</p>
+    <p>These views show elapsed time inside scopes, not measured CPU utilization. Nested or concurrent durations cannot be added to obtain a frame cost. Missing events do not establish idle time. The GPU track may omit batches at the end of the capture.</p>
+    <p>AnyPS5 has a live overlay on <kbd>F10</kbd>. This tool reads saved captures. RAM/VRAM usage charts require memory-usage data that is not available in the trace format supported here.</p>
+    <a href="https://github.com/boykopovar/AnyPS5/blob/acf04f85adc06c52524850e709253e232a1e5e02/docs/dev/BUILD.md#performance-trace" target="_blank" rel="noreferrer">Capture format and measurement limits in the project documentation ↗</a>
+  </section>
+  <div id="capture-picker-wrap" class="picker-row" hidden><label for="capture-picker">Capture segment</label><select id="capture-picker"></select><span class="muted small">Different runs and configurations are kept separate.</span></div>
+  <div id="warnings" class="notice" role="status" hidden></div>
+  <div class="section-label"><span id="stats-label">Entire capture</span><div class="budget-control"><label for="target">Display target</label><select id="target"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option><option value="120">120 FPS</option><option value="144">144 FPS</option></select><span id="budget-label" dir="ltr">16.67 ms</span></div></div>
+  <section class="stats" id="stats" aria-label="Capture statistics"></section>
+  <section class="panel frames-panel">
+    <div class="panel-heading"><div><h2 id="frame-title">Frame time</h2><p id="frame-subtitle">Click a point to inspect its interval on the timeline.</p></div><div id="frame-legend" class="legend"></div></div>
+    <div id="frame-chart" class="chart" dir="ltr" tabindex="0" role="group" aria-label="Frame time chart"></div>
+    <div class="frame-navigation"><div class="frame-position"><button id="prev-frame" class="square secondary" aria-label="Previous frame">‹</button><span id="selection-label" dir="ltr"></span><button id="next-frame" class="square secondary" aria-label="Next frame">›</button></div><input id="frame-slider" type="range" min="0" max="149" value="0" aria-label="Select frame" dir="ltr"><div class="jump-controls"><span class="muted small">Slowest</span><div id="slow-buttons"></div></div></div>
+  </section>
+  <section class="analysis-grid">
+    <div class="panel timeline-panel">
+      <div class="panel-heading"><div><h2>Selected range timeline</h2><p id="timeline-subtitle">Concurrent work on separate threads</p></div><label class="zoom-control" for="zoom">Zoom<select id="zoom"><option value="1">1 frame</option><option value="5" selected>5 frames</option><option value="21">21 frames</option><option value="0">Entire capture</option></select></label></div>
+      <div class="timeline-toolbar"><input id="search" type="search" placeholder="Search events or threads…" aria-label="Filter by event or thread name"><div class="legend"><span><i class="swatch work"></i>Work</span><span><i class="swatch wait"></i>Wait</span><span><i class="swatch compile"></i>Compile</span><span><i class="swatch memory"></i>Memory / copy</span><span><i class="swatch gpu"></i>GPU</span></div></div>
+      <div id="timeline" class="timeline" dir="ltr" role="group" aria-label="Thread timeline"></div>
+      <div id="event-detail" class="event-detail" aria-live="polite">Select an event bar to inspect its details.</div>
+    </div>
+    <aside class="panel investigation">
+      <div class="panel-heading"><div><div class="eyebrow">INVESTIGATE</div><h2>Investigation clues</h2><p id="investigation-range"></p></div><span class="badge neutral">Evidence to investigate</span></div>
+      <div id="insights"></div>
+      <div class="investigation-footer"><button id="export-report" class="secondary">Export selected range</button></div>
+    </aside>
+  </section>
+  <section class="bottom-grid">
+    <div class="panel thread-panel"><div class="panel-heading"><div><h2 id="occupancy-title">Recorded time per thread</h2><p id="occupancy-subtitle">Selected range; overlapping time is counted once.</p></div><span class="badge neutral">wall time</span></div><div id="thread-bars"></div><div class="legend bottom-legend"><span><i class="swatch work"></i>Non-wait scopes</span><span><i class="swatch wait"></i>Wait scopes</span><span><i class="swatch unknown"></i>Untraced</span></div></div>
+    <div class="panel hot-panel"><div class="panel-heading"><div><h2>Most expensive events</h2><p id="hot-subtitle">Durations include child scopes; adding rows does not give a frame cost.</p></div></div><div class="table-wrap"><table><thead><tr><th>Event</th><th id="hot-time-heading">Time in range</th><th>Count</th></tr></thead><tbody id="hot-rows"></tbody></table></div></div>
+  </section>
+  <footer><span>TRACE LAB / 01 <b>·</b> Local AnyPS5 capture analysis</span><button id="download-demo" class="text-button">Download demo trace</button><span id="footer-meta">Synthetic demo; not a measurement of your game or hardware.</span></footer>
+</div>
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+<script>__TRACE_LAB_MODEL__</script>
+<script>__TRACE_LAB_APP__</script>
+</body>
+</html>

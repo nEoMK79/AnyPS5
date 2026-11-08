@@ -317,6 +317,26 @@ Set `APS5_TRACE_BENCH=1` together with `APS5_TRACE_SUMMARY_EVERY` to also keep e
 
 With `APS5_TRACE_SUMMARY_EVERY` set, the recorder writes a timestamp pair per batch for the whole run and every `PerformanceTimer` scope adds its time to the thread's totals, two clock reads per scope. A thread's totals are read while it runs, so a scope that straddles an interval boundary is counted in one interval or the other.
 
+### Offline trace analyzer
+
+Open [AnyPS5-Profiler.html](../../tools/trace-lab/AnyPS5-Profiler.html) in Chrome or Edge, then select a raw `aps5-trace-*.json.gz` and its companion `aps5-summary.jsonl`. The self-contained page processes files locally and needs no GPU, server or package installation. Uncompressed trace JSON is also accepted. Its initial scenarios are synthetic, not measurements of a title or host.
+
+Selecting a frame updates the thread timeline, wait coverage and inclusive event table. Thread IDs remain separate even when names match. Related recorder batches can be highlighted. The selected range can be exported as JSON. Opening periodic summaries alone shows interval statistics without reconstructing individual frames or thread events. Build, environment, host, resolution or title changes and restarted clocks split the records into independent segments. `aps5-bench/1` and processed `trace_digest` output are not accepted.
+
+Trace frame times use consecutive presents; the final interval is excluded without a matching summary end. Percentiles use nearest rank. Per-thread coverage and GPU coverage use interval unions. Wait classification uses event names containing `wait`; scope wall time is not CPU utilization. Untraced time does not establish idleness. The event table includes child scopes and concurrent work, so its rows do not sum to a frame cost. Folded events have no exact timeline positions. Missing GPU data and dropped events are reported; the GPU track can also omit batches that complete after the capture closes. Summary percentiles are not averaged across intervals, and `memory_mib` is host capacity, not memory usage.
+
+The analyzer accepts at most eight files, 64 MiB per file before and after decompression, and 500,000 events per trace. Narrow the range or search when more than 3,000 events would appear on the timeline. Investigation clues identify correlations for further inspection, not established bottleneck causes.
+
+Rebuild the HTML with Python 3 and run the calculation tests with Node 22 or newer, from the repository root:
+
+```
+python tools/trace-lab/build.py
+python tools/trace-lab/build.py --check
+node --test tools/trace-lab/test_model.cjs
+```
+
+The fixtures originate from `tools/tests/test_trace_digest.py` and its Python digest output; they are synthetic test data.
+
 ## GPU time per command class
 
 Set `APS5_PROFILE_GPU=1` (any value) to time the recorder's GPU work with timestamp queries and print one `[gputime]` line on stderr. `APS5_PROFILE_DRAW` alone does not print it: a batch then gets only its whole-batch timestamp pair. A timed range is a pair of bottom-of-pipe stamps that both wait for all earlier work, so a range is the time its own work adds after everything recorded before it. A batch holds at most 512 ranges, its whole-batch range included. The line is written when a batch's timestamps are read after its fence, at least 10 s after the previous line, and covers every batch read since then.

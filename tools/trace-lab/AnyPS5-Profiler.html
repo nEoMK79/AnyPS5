@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
+<title>AnyPS5 · Trace Lab | Performance Analyzer</title>
+<style>:root{--bg:#0d1016;--surface:#141923;--raised:#1b2230;--line:#283142;--fg:#eaf0fa;--muted:#9daac0;--cyan:#69d9e7;--work:#72a9ff;--wait:#efbb69;--compile:#bd97f5;--memory:#68d6b0;--gpu:#ed947c;--unknown:#303b50;--danger:#ff969e;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:14px;line-height:1.65}button,input,select{font:inherit}button,select,input[type=range]{cursor:pointer}button{border:1px solid transparent;border-radius:9px;padding:10px 16px;font-weight:600;transition:background .15s,transform .15s}button:hover{filter:brightness(1.13)}button:active{transform:translateY(1px)}button:disabled{opacity:.35;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}button.primary{background:var(--cyan);color:#082832}button.secondary{background:var(--raised);color:var(--fg);border-color:var(--line)}button.compact{padding:7px 12px;font-size:12px}.square{padding:2px 9px;min-width:30px;font-size:21px}.text-button{border:0;background:transparent;color:var(--cyan);padding:0;font-weight:400}select{background:var(--raised);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 10px;max-width:100%}input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 11px;color:var(--fg);width:240px;max-width:100%}input[type=range]{accent-color:var(--cyan);min-width:70px}a{color:var(--cyan)}[hidden]{display:none!important}.app{max-width:1460px;padding:24px 36px;margin:0 auto}.masthead{display:flex;justify-content:space-between;align-items:center;padding:0 0 22px;border-bottom:1px solid var(--line)}.brand{display:flex;gap:12px;align-items:center;font-size:13px;letter-spacing:1.6px;font-weight:700}.brand b{color:var(--muted);font-weight:500}.brand-mark{height:22px;display:flex;gap:3px;align-items:center}.brand-mark i{width:4px;background:var(--cyan);border-radius:3px;height:12px}.brand-mark i:nth-child(2){height:22px}.brand-mark i:nth-child(3){height:16px}.version{font-size:9px;border:1px solid var(--line);border-radius:4px;padding:3px 7px;color:var(--muted);letter-spacing:1px}.independent{color:var(--muted);font-size:11px}.hero{display:flex;justify-content:space-between;align-items:center;margin:28px 0 24px;gap:18px}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--muted);font-weight:650;direction:ltr;text-align:left}h1{font-size:31px;font-weight:650;letter-spacing:-.6px;line-height:1.5;margin:5px 0 6px}h2{font-size:15px;font-weight:650;margin:0}p{margin:5px 0;color:var(--muted)}.hero p{font-size:13px}.hero-actions{display:flex;gap:9px;flex-shrink:0}.source-panel{padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:13px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;transition:border-color .15s}.source-panel.drag{border-color:var(--cyan);background:#182933}.source-main{display:flex;align-items:center;gap:12px;flex:1;min-width:250px}.status-dot{width:9px;height:9px;background:var(--cyan);border-radius:50%;flex-shrink:0}.source-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.source-top strong{font-size:13px;word-break:break-word}.badge{font-size:10px;white-space:nowrap;font-weight:600;border-radius:5px;padding:3px 7px}.badge.demo{color:var(--wait);background:#342d20}.badge.imported{color:var(--memory);background:#18352f}.badge.neutral{color:var(--muted);background:var(--raised)}.source-controls{display:flex;align-items:center;gap:9px}.source-controls label{color:var(--muted);font-size:11px}.drop-hint{width:100%;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.small{font-size:11px}.muted{color:var(--muted)}.error,.notice{margin-top:14px;border-radius:9px;padding:10px 14px;line-height:1.8;font-size:12px}.error{background:#351d29;color:var(--danger);border:1px solid #724452}.notice{background:#241f19;color:#e9c99b;border:1px solid #453728}.notice ul{padding:0 16px;margin:0}.picker-row{display:flex;gap:12px;align-items:center;margin-top:15px;flex-wrap:wrap}.section-label{display:flex;align-items:center;justify-content:space-between;margin:24px 0 10px;font-size:12px;color:var(--muted)}.budget-control{display:flex;align-items:center;gap:8px;font-size:11px}.budget-control select{padding:3px 7px;font-size:11px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:15px 18px;min-width:0}.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}.stat-value{font-size:26px;letter-spacing:-1px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.4;direction:ltr;text-align:left}.stat-value small{font-size:10px;letter-spacing:0;color:var(--muted);font-weight:400;margin-left:5px}.stat-note{font-size:10px;color:var(--muted);margin-top:3px;min-height:17px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;min-width:0;overflow:hidden}.panel-heading{padding:17px 19px 10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.panel-heading p{font-size:11px;margin:5px 0 0}.legend{display:flex;align-items:center;gap:12px;font-size:10px;color:var(--muted);flex-wrap:wrap}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0}.work{background:var(--work)}.wait{background:var(--wait)}.compile{background:var(--compile)}.memory{background:var(--memory)}.gpu{background:var(--gpu)}.unknown{background:var(--unknown)}.budget-swatch{width:12px;height:0;border-top:1px dashed var(--wait)}.chart{width:100%;padding:0 13px;cursor:crosshair;min-height:220px}.chart svg{display:block;width:100%;height:235px;touch-action:pan-y}.frame-navigation{display:flex;align-items:center;gap:16px;padding:12px 19px;border-top:1px solid var(--line);flex-wrap:wrap}.frame-navigation input{flex:1}.frame-position{display:flex;align-items:center;gap:8px;direction:ltr;font-size:11px;font-variant-numeric:tabular-nums;min-width:150px}.jump-controls{display:flex;align-items:center;gap:8px}.jump-controls button{padding:4px 7px;border:0;background:var(--raised);color:var(--fg);border-radius:5px;font-size:10px;margin-right:4px;font-variant-numeric:tabular-nums}.jump-controls button.selected{color:var(--bg);background:var(--cyan)}.analysis-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;margin-top:16px}.timeline-toolbar{padding:0 19px 12px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.zoom-control{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px;white-space:nowrap}.zoom-control select{font-size:11px}.timeline{padding:0 10px;overflow-x:auto;min-height:150px}.timeline svg{display:block;min-width:650px;width:100%}.event-detail{border-top:1px solid var(--line);padding:12px 19px;color:var(--muted);font-size:11px;min-height:48px;overflow-wrap:anywhere}.event-detail strong{color:var(--fg)}.investigation .panel-heading{flex-direction:column;gap:10px}.investigation h2{margin-top:6px}.insight{margin:0 18px;padding:14px 0;border-top:1px solid var(--line)}.insight-label{font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px}.insight p{font-size:11px;line-height:1.9}.insight .evidence{margin-top:8px;color:var(--fg);font-variant-numeric:tabular-nums;font-size:12px;direction:ltr;text-align:left}.investigation-footer{padding:10px 18px 18px}.investigation-footer button{font-size:11px;width:100%}.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.thread-row{padding:8px 19px}.thread-label{display:flex;justify-content:space-between;font-size:10px;gap:10px;align-items:center;margin-bottom:5px;direction:ltr}.thread-label .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Consolas,monospace;max-width:67%}.thread-label .value{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.track{height:7px;display:flex;direction:ltr;background:var(--unknown);border-radius:3px;overflow:hidden}.track span{min-width:0}.bottom-legend{padding:16px 19px}.table-wrap{padding:0 16px 12px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:11px;text-align:left}th{color:var(--muted);font-size:10px;font-weight:500;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}td{padding:9px 6px;border-bottom:1px solid #222a39;font-variant-numeric:tabular-nums}td:first-child{direction:ltr;text-align:left;overflow-wrap:anywhere;font-family:Consolas,monospace;max-width:330px}th:nth-child(2),th:nth-child(3),td:nth-child(2),td:nth-child(3){white-space:nowrap;direction:ltr;text-align:right}.scope-name{display:flex;align-items:center;gap:7px}.scope-name .swatch{width:5px;height:5px}footer{display:flex;justify-content:space-between;gap:14px;padding:22px 2px 8px;font-size:10px;color:var(--muted);flex-wrap:wrap}footer b{margin:0 6px;font-weight:400}.tooltip{position:fixed;z-index:10;pointer-events:none;max-width:330px;padding:9px 12px;border:1px solid #405069;border-radius:7px;background:#202a39;box-shadow:0 4px 20px #0005;color:var(--fg);font-size:11px;white-space:pre-line;direction:ltr;overflow-wrap:anywhere}.help{padding:0 20px 18px;margin-top:15px}.help .panel-heading{padding-left:0}.help p{font-size:12px;margin:10px 0}.help pre{background:var(--bg);border:1px solid var(--line);padding:12px 16px;border-radius:8px;overflow:auto;color:#c6d5eb;font-size:12px;line-height:1.8}.help code,.help kbd{background:var(--raised);padding:2px 5px;border-radius:3px;font-size:11px}.help a{font-size:11px}.empty{padding:35px 20px;text-align:center;font-size:12px;color:var(--muted);line-height:2}.chart .tick,.timeline .tick{fill:var(--muted);font-family:"Segoe UI",Tahoma,sans-serif;font-size:10px}.timeline .lane-name{fill:var(--fg);font-family:Consolas,monospace;font-size:10px}.timeline .event-label{fill:#101722;font-family:Consolas,monospace;font-size:9px;pointer-events:none}.timeline .event-bar{cursor:pointer}.timeline .event-bar:hover{filter:brightness(1.2)}.timeline .event-bar:focus-visible{outline:2px solid var(--fg)}.no-data{padding:12px 19px;color:var(--muted);font-size:11px}.captured-stat{color:var(--fg)}.privacy{font-size:10px}
+@media(max-width:1100px){.app{padding:20px}.analysis-grid{grid-template-columns:minmax(0,1fr) 260px}.source-controls{width:100%;border-top:1px solid var(--line);padding-top:10px}.stats .stat{padding:13px}.stat-value{font-size:23px}.timeline-toolbar .legend{gap:8px}}
+@media(max-width:820px){.analysis-grid,.bottom-grid{grid-template-columns:1fr}.investigation{display:block}.stats{grid-template-columns:repeat(3,1fr)}.hero{align-items:flex-start}.hero-actions{flex-direction:column}.independent{display:none}.frame-navigation{gap:9px}.jump-controls{width:100%}.chart svg{height:215px}.timeline svg{min-width:680px}.version{display:none}}
+@media(max-width:480px){.app{padding:12px}.hero{margin-top:20px}h1{font-size:24px}.hero p{font-size:11px}.hero-actions button{font-size:11px;padding:8px 10px}.stats{grid-template-columns:repeat(2,1fr);gap:8px}.stat:last-child{grid-column:span 2}.stat-value{font-size:25px}.brand{font-size:10px}.source-controls{flex-wrap:wrap}.source-controls select{max-width:210px}.panel-heading{padding:14px 13px 10px}.timeline-toolbar{padding:0 13px 12px}.panel-heading p{font-size:10px}.frame-navigation{padding:10px 13px}.frame-position{min-width:130px}.budget-control{gap:5px}.hero .eyebrow{font-size:8px}footer{line-height:1.8}.legend{font-size:9px;gap:8px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="masthead">
+    <div class="brand" dir="ltr"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>ANYPS5 <b>/ TRACE LAB</b></span><span class="version">LOCAL · 01</span></div>
+    <span class="independent">Standalone trace analyzer</span>
+  </header>
+  <section class="hero">
+    <div><div class="eyebrow">PROFILING WORKSPACE</div><h1>Behind every frame</h1><p>Explore slow frames, thread activity and waits on one timeline.</p></div>
+    <div class="hero-actions"><button id="open-files" class="primary">Open capture</button><button id="help-toggle" class="secondary" aria-expanded="false" aria-controls="capture-help">Capture guide</button></div>
+  </section>
+  <input id="file-input" type="file" accept=".json,.jsonl,.gz" multiple hidden aria-label="Select capture files">
+  <section class="source-panel" id="drop-zone" aria-label="Data source">
+    <div class="source-main"><span class="status-dot" aria-hidden="true"></span><div><div class="source-top"><strong id="source-name">Shader compilation demo</strong><span id="source-badge" class="badge demo">Synthetic data</span></div><div id="source-meta" class="small muted">Explore the views with a sample capture</div></div></div>
+    <div class="source-controls"><label for="demo-mode">Demo scenario</label><select id="demo-mode"><option value="compile">Shader compilation stutter</option><option value="cpu">Busy thread</option><option value="gpu">Busy GPU</option><option value="wait">Lock contention</option></select><button id="load-demo" class="secondary compact">Load demo</button></div>
+    <div class="drop-hint">Drop a <bdi>.json / .json.gz</bdi> trace and its companion summary, or <bdi>aps5-summary.jsonl</bdi>, here. Files are processed on this device.</div>
+  </section>
+  <div id="error" class="error" role="alert" hidden></div>
+  <section id="capture-help" class="panel help" hidden>
+    <div class="panel-heading"><div><h2>Record a short capture in AnyPS5</h2><p>Run this in PowerShell from the converted game directory. Replace the executable name with the one for your game.</p></div></div>
+    <pre dir="ltr">$env:APS5_TRACE_SECONDS = '30:10'
+$env:APS5_PROFILE_GPU = '1'
+$env:APS5_TRACE_DIR = (Join-Path $PWD 'trace-output')
+New-Item -ItemType Directory -Force $env:APS5_TRACE_DIR
+.\app.exe</pre>
+    <p>This records a 10-second window starting 30 seconds after the first present. Open the trace and summary from the same run together. If the game exits before the window closes, no trace file is written.</p>
+    <p>For longer sessions, periodic summaries are available with <code dir="ltr">APS5_TRACE_SUMMARY_EVERY=5</code>. They do not contain individual thread events.</p>
+    <p>These views show elapsed time inside scopes, not measured CPU utilization. Nested or concurrent durations cannot be added to obtain a frame cost. Missing events do not establish idle time. The GPU track may omit batches at the end of the capture.</p>
+    <p>AnyPS5 has a live overlay on <kbd>F10</kbd>. This tool reads saved captures. RAM/VRAM usage charts require memory-usage data that is not available in the trace format supported here.</p>
+    <a href="https://github.com/boykopovar/AnyPS5/blob/acf04f85adc06c52524850e709253e232a1e5e02/docs/dev/BUILD.md#performance-trace" target="_blank" rel="noreferrer">Capture format and measurement limits in the project documentation ↗</a>
+  </section>
+  <div id="capture-picker-wrap" class="picker-row" hidden><label for="capture-picker">Capture segment</label><select id="capture-picker"></select><span class="muted small">Different runs and configurations are kept separate.</span></div>
+  <div id="warnings" class="notice" role="status" hidden></div>
+  <div class="section-label"><span id="stats-label">Entire capture</span><div class="budget-control"><label for="target">Display target</label><select id="target"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option><option value="120">120 FPS</option><option value="144">144 FPS</option></select><span id="budget-label" dir="ltr">16.67 ms</span></div></div>
+  <section class="stats" id="stats" aria-label="Capture statistics"></section>
+  <section class="panel frames-panel">
+    <div class="panel-heading"><div><h2 id="frame-title">Frame time</h2><p id="frame-subtitle">Click a point to inspect its interval on the timeline.</p></div><div id="frame-legend" class="legend"></div></div>
+    <div id="frame-chart" class="chart" dir="ltr" tabindex="0" role="group" aria-label="Frame time chart"></div>
+    <div class="frame-navigation"><div class="frame-position"><button id="prev-frame" class="square secondary" aria-label="Previous frame">‹</button><span id="selection-label" dir="ltr"></span><button id="next-frame" class="square secondary" aria-label="Next frame">›</button></div><input id="frame-slider" type="range" min="0" max="149" value="0" aria-label="Select frame" dir="ltr"><div class="jump-controls"><span class="muted small">Slowest</span><div id="slow-buttons"></div></div></div>
+  </section>
+  <section class="analysis-grid">
+    <div class="panel timeline-panel">
+      <div class="panel-heading"><div><h2>Selected range timeline</h2><p id="timeline-subtitle">Concurrent work on separate threads</p></div><label class="zoom-control" for="zoom">Zoom<select id="zoom"><option value="1">1 frame</option><option value="5" selected>5 frames</option><option value="21">21 frames</option><option value="0">Entire capture</option></select></label></div>
+      <div class="timeline-toolbar"><input id="search" type="search" placeholder="Search events or threads…" aria-label="Filter by event or thread name"><div class="legend"><span><i class="swatch work"></i>Work</span><span><i class="swatch wait"></i>Wait</span><span><i class="swatch compile"></i>Compile</span><span><i class="swatch memory"></i>Memory / copy</span><span><i class="swatch gpu"></i>GPU</span></div></div>
+      <div id="timeline" class="timeline" dir="ltr" role="group" aria-label="Thread timeline"></div>
+      <div id="event-detail" class="event-detail" aria-live="polite">Select an event bar to inspect its details.</div>
+    </div>
+    <aside class="panel investigation">
+      <div class="panel-heading"><div><div class="eyebrow">INVESTIGATE</div><h2>Investigation clues</h2><p id="investigation-range"></p></div><span class="badge neutral">Evidence to investigate</span></div>
+      <div id="insights"></div>
+      <div class="investigation-footer"><button id="export-report" class="secondary">Export selected range</button></div>
+    </aside>
+  </section>
+  <section class="bottom-grid">
+    <div class="panel thread-panel"><div class="panel-heading"><div><h2 id="occupancy-title">Recorded time per thread</h2><p id="occupancy-subtitle">Selected range; overlapping time is counted once.</p></div><span class="badge neutral">wall time</span></div><div id="thread-bars"></div><div class="legend bottom-legend"><span><i class="swatch work"></i>Non-wait scopes</span><span><i class="swatch wait"></i>Wait scopes</span><span><i class="swatch unknown"></i>Untraced</span></div></div>
+    <div class="panel hot-panel"><div class="panel-heading"><div><h2>Most expensive events</h2><p id="hot-subtitle">Durations include child scopes; adding rows does not give a frame cost.</p></div></div><div class="table-wrap"><table><thead><tr><th>Event</th><th id="hot-time-heading">Time in range</th><th>Count</th></tr></thead><tbody id="hot-rows"></tbody></table></div></div>
+  </section>
+  <footer><span>TRACE LAB / 01 <b>·</b> Local AnyPS5 capture analysis</span><button id="download-demo" class="text-button">Download demo trace</button><span id="footer-meta">Synthetic demo; not a measurement of your game or hardware.</span></footer>
+</div>
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+<script>(function (root) {
+  'use strict';
+  const MAX_EVENTS = 500000;
+  const finite = (n) => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) < 1e15;
+  function requireValue(ok, message) { if (!ok) throw new Error(message); }
+  function union(ranges) {
+    const sorted = ranges.filter(r => r[1] > r[0]).map(r => [r[0], r[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const out = [];
+    for (const r of sorted) {
+      const last = out[out.length - 1];
+      if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
+      else out.push(r);
+    }
+    return out;
+  }
+  function measure(ranges, start, end) {
+    let value = 0;
+    for (const [a, b] of ranges) {
+      if (a >= end) break;
+      value += Math.max(0, Math.min(b, end) - Math.max(a, start));
+    }
+    return value;
+  }
+  function percentile(values, p) {
+    if (!values.length) return null;
+    const sorted = values.slice().sort((a, b) => a - b);
+    return sorted[Math.max(0, Math.ceil(p * sorted.length) - 1)];
+  }
+  function category(name, gpu) {
+    if (gpu) return 'gpu';
+    if (/wait/i.test(name)) return 'wait';
+    if (/compil|spirv|translate/i.test(name)) return 'compile';
+    if (/copy|upload|readback|import|memory|alloc/i.test(name)) return 'memory';
+    return 'work';
+  }
+  function summaryFor(records, filename) {
+    const alias = filename.endsWith('.gz') ? filename.slice(0, -3) : filename + '.gz';
+    for (const name of [filename, alias]) {
+      const found = records.filter(r => r && r.trace === name && !Object.hasOwn(r, 'interval_start_s'));
+      if (found.length) return found[found.length - 1];
+    }
+    return null;
+  }
+  function trace(document, filename = 'capture.json', records = []) {
+    const events = Array.isArray(document) ? document : document?.traceEvents;
+    requireValue(Array.isArray(events), 'The file must be an event array or a Chrome trace containing traceEvents.');
+    requireValue(events.length <= MAX_EVENTS, 'The trace exceeds 500,000 events. Import a shorter capture.');
+    const threads = new Map(), presents = [], pids = new Set(), losses = [];
+    let folded = false;
+    function threadFor(e, i) {
+      requireValue(Number.isInteger(e.tid), `Event ${i + 1}: invalid thread ID.`);
+      const pid = e.pid ?? 0;
+      requireValue(Number.isInteger(pid) || typeof pid === 'string', `Event ${i + 1}: invalid process ID.`);
+      const key = JSON.stringify([pid, e.tid]);
+      pids.add(pid);
+      if (!threads.has(key)) threads.set(key, {key, tid: e.tid, pid, name: `thread ${e.tid}`, events: []});
+      return threads.get(key);
+    }
+    events.forEach((e, i) => {
+      requireValue(e && typeof e === 'object' && !Array.isArray(e), `Event ${i + 1}: invalid event structure.`);
+      if (e.ph === 'M' && e.name === 'thread_name') {
+        requireValue(typeof e.args?.name === 'string', `Event ${i + 1}: invalid thread name.`);
+        threadFor(e, i).name = e.args.name;
+      } else if (e.ph === 'X') {
+        requireValue(finite(e.ts) && finite(e.dur) && e.dur >= 0 && finite(e.ts + e.dur) && typeof e.name === 'string', `Event ${i + 1}: invalid timestamp, duration or name.`);
+        threadFor(e, i).events.push({start: e.ts / 1000, end: (e.ts + e.dur) / 1000, name: e.name, batch: e.args?.batch ?? null});
+      } else if (e.ph === 'i' && e.name === 'present') {
+        requireValue(finite(e.ts), `Event ${i + 1}: invalid present timestamp.`);
+        threadFor(e, i);
+        presents.push({start: e.ts / 1000, id: e.args?.present ?? presents.length});
+      } else if (e.ph === 'i' && e.name === 'trace buffer full') {
+        requireValue(finite(e.ts) && Number.isInteger(e.args?.events_lost) && e.args.events_lost >= 0, `Event ${i + 1}: invalid lost-event count.`);
+        const t = threadFor(e, i);
+        if (e.args.events_lost) losses.push({thread: t.key, at: e.ts / 1000, count: e.args.events_lost});
+      } else if (e.ph === 'C') folded = true;
+    });
+    requireValue(pids.size <= 1, 'This file contains multiple processes. Import a trace from one game process to keep timings separate.');
+    presents.sort((a, b) => a.start - b.start);
+    const summary = summaryFor(records, filename);
+    const warnings = [];
+    if (records.length && !summary) warnings.push('No summary matches this trace filename. Summary metadata was not assigned to this capture.');
+    let stop = presents.length ? presents[presents.length - 1].start : null;
+    if (summary) {
+      requireValue(finite(summary.window?.ms) && summary.window.ms >= 0, 'The companion summary has an invalid window duration.');
+      requireValue(stop === null || summary.window.ms >= stop, 'The summary ends before the final present. These files are inconsistent.');
+      stop = summary.window.ms;
+    }
+    const frames = [];
+    for (let i = 0; i < presents.length; i++) {
+      const end = i + 1 < presents.length ? presents[i + 1].start : stop;
+      if (i + 1 < presents.length || end > presents[i].start) frames.push({...presents[i], end, ms: end - presents[i].start});
+    }
+    const tracks = [...threads.values()].filter(t => t.events.length);
+    for (const t of tracks) {
+      t.gpu = t.name.toLowerCase() === 'gpu';
+      t.events.sort((a, b) => a.start - b.start || b.end - a.end);
+      const stack = [];
+      for (const e of t.events) {
+        while (stack.length && e.start >= stack[stack.length - 1].end) stack.pop();
+        e.depth = stack.length;
+        e.kind = category(e.name, t.gpu);
+        stack.push(e);
+      }
+      t.ranges = union(t.events.map(e => [e.start, e.end]));
+      t.waits = union(t.events.filter(e => e.kind === 'wait').map(e => [e.start, e.end]));
+    }
+    const bounds = tracks.flatMap(t => t.ranges);
+    const start = frames.length ? frames[0].start : bounds.reduce((n, r) => Math.min(n, r[0]), Infinity);
+    const end = frames.length ? frames[frames.length - 1].end : bounds.reduce((n, r) => Math.max(n, r[1]), -Infinity);
+    requireValue(Number.isFinite(start) && Number.isFinite(end), 'This trace contains no complete frames or timed events.');
+    if (!frames.length) warnings.push('Two presents or a valid end boundary are unavailable. Frame rate and percentiles were not calculated.');
+    if (!summary && frames.length) warnings.push('The frame after the final present was excluded because no companion summary is available.');
+    if (!tracks.some(t => t.gpu)) warnings.push('This capture has no GPU timeline. GPU underutilization or idleness cannot be inferred.');
+    if (folded) warnings.push('Folded short events have no exact positions and are omitted from the timeline bars.');
+    const incomplete = losses.length > 0 || summary?.trace_dropped === true;
+    if (incomplete) warnings.unshift('Some events were not recorded. Bars and timings show only the remaining data.');
+    const synthetic = !Array.isArray(document) && document.traceLab?.synthetic === true;
+    return {type: 'trace', filename, summary, frames, tracks, start, end, warnings, losses, incomplete, demo: synthetic,
+      mode: synthetic ? document.traceLab.mode : undefined, document: synthetic ? document : undefined};
+  }
+  function jsonl(text) {
+    return text.replace(/^\uFEFF/, '').split('\n').flatMap((line, i) => {
+      if (!line.trim()) return [];
+      let row;
+      try { row = JSON.parse(line); } catch { throw new Error(`Line ${i + 1}: invalid JSON. Record the incomplete capture again.`); }
+      requireValue(row && typeof row === 'object' && !Array.isArray(row), `Line ${i + 1}: each record must be an object.`);
+      return [row];
+    });
+  }
+  const identityKeys = ['commit', 'dirty', 'gpu', 'driver', 'os', 'cpu', 'cpu_threads', 'memory_mib', 'resolution', 'title_id', 'title', 'content_version', 'env'];
+  function canonical(value) {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(k => [k, canonical(value[k])]));
+    return value;
+  }
+  function intervals(records, filename) {
+    const rows = records.filter(r => Object.hasOwn(r, 'interval_start_s'));
+    requireValue(rows.length, 'This file has no periodic interval records. Open it with its trace file.');
+    const segments = [];
+    let previous = null, identity = null;
+    for (const [i, row] of rows.entries()) {
+      requireValue(finite(row.interval_start_s) && finite(row.interval_end_s) && row.interval_start_s >= 0 && row.interval_end_s >= row.interval_start_s, `Interval ${i + 1}: invalid start or end time.`);
+      requireValue(Number.isInteger(row.presents) && row.presents >= 0, `Interval ${i + 1}: invalid present count.`);
+      const q = ['p50', 'p90', 'p99', 'max'].map(k => row.frame_ms?.[k]);
+      requireValue(q.every(n => finite(n) && n >= 0) && q.every((n, j) => j === 0 || n >= q[j - 1]), `Interval ${i + 1}: frame time percentiles are invalid or out of order.`);
+      requireValue(finite(row.gpu_busy_ms_per_present) && row.gpu_busy_ms_per_present >= 0, `Interval ${i + 1}: invalid GPU time.`);
+      for (const field of ['worker_busy_pct', 'top_phases_ms_per_frame']) {
+        const entries = Object.hasOwn(row, field) ? row[field] : {};
+        requireValue(entries && typeof entries === 'object' && !Array.isArray(entries) && Object.values(entries).every(n => finite(n) && n >= 0), `Interval ${i + 1}: invalid ${field}.`);
+      }
+      requireValue(!Object.hasOwn(row, 'trace_dropped') || typeof row.trace_dropped === 'boolean', `Interval ${i + 1}: invalid dropped-event status.`);
+      const id = JSON.stringify(canonical(Object.fromEntries(identityKeys.map(k => [k, row[k] ?? null]))));
+      if (!previous || id !== identity || row.interval_start_s < previous.interval_end_s) segments.push([]);
+      segments[segments.length - 1].push(row);
+      previous = row; identity = id;
+    }
+    return segments.map((part, index) => ({type: 'intervals', filename, rows: part, summary: part[0], start: part[0].interval_start_s * 1000,
+      end: part[part.length - 1].interval_end_s * 1000, incomplete: part.some(r => r.trace_dropped === true), tracks: [], frames: [], demo: false,
+      warnings: ['This file contains only periodic summaries. Thread timelines and individual frames cannot be reconstructed.', 'worker_busy_pct measures scope occupancy and may include waits; it is not measured CPU utilization.', ...(segments.length > 1 ? [`The file was split into ${segments.length} independent segments. Segment ${index + 1} is selected.`] : [])]}));
+  }
+  function stats(data, budget) {
+    if (data.type === 'intervals') return null;
+    const times = data.frames.map(f => f.ms);
+    const elapsed = times.reduce((n, x) => n + x, 0);
+    return {count: times.length, fps: elapsed > 0 ? 1000 * times.length / elapsed : null, mean: times.length ? elapsed / times.length : null,
+      p50: percentile(times, .5), p99: percentile(times, .99), max: times.length ? times.reduce((a, b) => Math.max(a, b), 0) : null,
+      over: times.filter(t => t > budget).length};
+  }
+  function analyze(data, begin, end) {
+    const span = Math.max(0, end - begin), phases = new Map();
+    const threads = data.tracks.map(t => {
+      const recorded = measure(t.ranges, begin, end), waiting = measure(t.waits, begin, end);
+      let calls = 0;
+      for (const e of t.events) {
+        if (e.start >= end) break;
+        const overlap = Math.max(0, Math.min(e.end, end) - Math.max(e.start, begin));
+        if (overlap <= 0) continue;
+        calls++;
+        const key = JSON.stringify([t.gpu, e.name]);
+        if (!phases.has(key)) phases.set(key, {name: e.name, kind: e.kind, ms: 0, calls: 0, max: 0, threads: new Set()});
+        const entry = phases.get(key);
+        entry.ms += overlap; entry.calls++; entry.max = Math.max(entry.max, overlap); entry.threads.add(t.key);
+      }
+      return {...t, recorded, waiting, working: Math.max(0, recorded - waiting), unknown: Math.max(0, span - recorded), calls};
+    });
+    const gpuRanges = union(data.tracks.filter(t => t.gpu).flatMap(t => t.ranges));
+    return {begin, end, span, threads, gpuMs: data.tracks.some(t => t.gpu) ? measure(gpuRanges, begin, end) : null,
+      phases: [...phases.values()].sort((a, b) => b.ms - a.ms).map(p => ({...p, threads: p.threads.size}))};
+  }
+  function demo(mode = 'compile') {
+    const events = [], names = ['queue worker 0x0', 'draw committer', 'shader prepare', 'presenter', 'gpu', 'shader prepare'];
+    names.forEach((name, i) => events.push({ph: 'M', name: 'thread_name', pid: 1, tid: i + 1, args: {name}}));
+    function add(tid, name, start, dur, batch) { events.push({ph: 'X', pid: 1, tid, name, ts: Math.round(start * 1000), dur: Math.round(dur * 1000), args: {batch}}); }
+    let time = 0;
+    for (let i = 0; i < 150; i++) {
+      const spike = mode === 'compile' && [37, 78, 113].includes(i);
+      let duration = 15.1 + (Math.sin(i * .48) + 1) * 1.5;
+      if (mode === 'cpu') duration += 9 + Math.sin(i * .13) * 2;
+      if (mode === 'gpu') duration += 14 + Math.sin(i * .12) * 2;
+      if (mode === 'wait' && i > 43 && i < 84) duration += 20;
+      if (spike) duration = 67 + (i % 3) * 9;
+      events.push({ph: 'i', name: 'present', pid: 1, tid: 4, ts: Math.round(time * 1000), args: {present: 600 + i}});
+      add(1, 'Driver.WorkerWait', time, duration * .12, i);
+      add(1, 'Driver.Packet', time + duration * .12, duration * (mode === 'cpu' ? .84 : .55), i);
+      add(1, 'Driver.Packet.draw', time + duration * .18, duration * .26, i);
+      add(2, 'Graphics.Draw', time + duration * .15, duration * (mode === 'cpu' ? .80 : .5), i);
+      add(2, 'Buffer.UploadCopy', time + duration * .20, duration * .10, i);
+      if (mode === 'wait' && i > 43 && i < 84) add(1, 'GpuMutex.wait.draw', time + duration * .2, duration * .44, i);
+      if (spike) {
+        add(3, 'Shader.Compile', time + .4, duration * .88, i);
+        add(6, 'Pipeline.Compile', time + 2.5, duration * .61, i);
+        add(2, 'Pipeline.wait', time + duration * .22, duration * .40, i);
+      }
+      add(4, 'Driver.Present', time + duration * .75, duration * .22, i);
+      add(4, 'Driver.Present.inflight_wait', time + duration * .76, duration * .15, i);
+      const gpuStart = mode === 'gpu' ? .02 : .60, gpuShare = mode === 'gpu' ? .94 : (spike ? .14 : .32);
+      add(5, 'batch', time + duration * gpuStart, duration * gpuShare, i);
+      add(5, 'draw', time + duration * (gpuStart + .01), duration * gpuShare * .8, i);
+      add(5, 'copy', time + duration * (gpuStart + gpuShare * .8), duration * gpuShare * .14, i);
+      time += duration;
+    }
+    events.push({ph: 'i', name: 'present', pid: 1, tid: 4, ts: Math.round(time * 1000), args: {present: 750}});
+    const document = {traceLab: {synthetic: true, mode}, traceEvents: events};
+    const data = trace(document, `demo-${mode}.json`);
+    data.demo = true; data.mode = mode; data.document = document;
+    data.warnings = data.warnings.filter(w => !w.startsWith('The frame after the final present'));
+    return data;
+  }
+  const api = {union, measure, percentile, category, summaryFor, trace, jsonl, intervals, stats, analyze, demo};
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.TraceLabModel = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script>(function () {
+  'use strict';
+  const M = window.TraceLabModel, $ = id => document.getElementById(id);
+  const state = {data: null, groups: [], selected: 0, target: 60, zoom: 5, search: '', batch: null, analysis: null};
+  const names = {compile: 'Shader compilation stutter', cpu: 'Busy thread', gpu: 'Busy GPU', wait: 'Lock contention'};
+  const colors = {work: '#72a9ff', wait: '#efbb69', compile: '#bd97f5', memory: '#68d6b0', gpu: '#ed947c', muted: '#9daac0', line: '#283142', cyan: '#69d9e7'};
+  const number = (n, decimals = 1) => n == null || !Number.isFinite(n) ? '—' : n.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+  const el = (tag, className, text) => { const n = document.createElement(tag); if (className) n.className = className; if (text != null) n.textContent = text; return n; };
+  function svgNode(tag, attrs = {}, text) {
+    const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function add(parent, tag, attrs, text) { const n = svgNode(tag, attrs, text); parent.append(n); return n; }
+  function tip(text, event) {
+    const t = $('tooltip'); t.textContent = text; t.hidden = false;
+    const x = event.clientX ?? 20, y = event.clientY ?? 20;
+    t.style.left = Math.max(8, Math.min(x + 14, window.innerWidth - t.offsetWidth - 8)) + 'px';
+    t.style.top = Math.max(8, Math.min(y + 15, window.innerHeight - t.offsetHeight - 8)) + 'px';
+  }
+  function hideTip() { $('tooltip').hidden = true; }
+  function length() { return state.data.type === 'trace' ? state.data.frames.length : state.data.rows.length; }
+  function select(index) { state.selected = Math.max(0, Math.min(Math.max(0, length() - 1), index)); state.batch = null; hideTip(); render(); }
+  function setData(data) {
+    state.data = data; state.search = ''; state.batch = null; $('search').value = '';
+    const values = data.type === 'trace' ? data.frames.map(f => f.ms) : data.rows.map(r => r.frame_ms.p99);
+    state.selected = values.reduce((best, value, i) => value > values[best] ? i : best, 0);
+    $('error').hidden = true; render();
+  }
+  function showError(error) { $('error').textContent = error.message || String(error); $('error').hidden = false; }
+  function setGroups(groups) {
+    state.groups = groups;
+    const picker = $('capture-picker'); picker.replaceChildren();
+    groups.forEach((d, i) => picker.append(el('option', '', `${i + 1} · ${d.filename} · ${String(d.summary?.commit ?? 'trace').slice(0, 10)} · ${number(d.start / 1000)}–${number(d.end / 1000)} s`)));
+    [...picker.options].forEach((o, i) => o.value = String(i));
+    $('capture-picker-wrap').hidden = groups.length < 2;
+    setData(groups[0]);
+  }
+  function stat(label, value, unit, note) {
+    const card = el('div', 'stat'); card.append(el('div', 'stat-label', label));
+    const v = el('div', 'stat-value', value); if (unit) v.append(el('small', '', unit));
+    card.append(v, el('div', 'stat-note', note)); return card;
+  }
+  function renderStats() {
+    const d = state.data, budget = 1000 / state.target, cards = [];
+    $('budget-label').textContent = number(budget, 2) + ' ms';
+    if (d.type === 'trace') {
+      const s = M.stats(d, budget);
+      $('stats-label').textContent = 'Entire capture · ' + number(s.count, 0) + ' complete present intervals';
+      cards.push(stat('Average present rate', number(s.fps), 'FPS', 'Frame count / total duration'));
+      cards.push(stat('Average frame time', number(s.mean, 2), 'ms', 'Across all complete intervals'));
+      cards.push(stat('Median frame time', number(s.p50, 2), 'ms', 'P50 · nearest-rank method'));
+      cards.push(stat('99th percentile frame time', number(s.p99, 2), 'ms', 'P99 · slow frames'));
+      cards.push(stat('Frames over budget', s.count ? number(100 * s.over / s.count) : '—', '%', `${number(s.over, 0)} of ${number(s.count, 0)} frames`));
+    } else {
+      const r = d.rows[state.selected], seconds = r.interval_end_s - r.interval_start_s;
+      $('stats-label').textContent = `Selected interval · ${number(r.interval_start_s)} to ${number(r.interval_end_s)} s`;
+      cards.push(stat('Interval present rate', seconds ? number(r.presents / seconds) : '—', 'FPS', `${number(r.presents, 0)} present`));
+      cards.push(stat('Interval median', number(r.frame_ms.p50, 2), 'ms', 'P50 recorded in the file'));
+      cards.push(stat('Interval 99th percentile', number(r.frame_ms.p99, 2), 'ms', 'P99 recorded in the file'));
+      cards.push(stat('Maximum frame time', number(r.frame_ms.max, 2), 'ms', 'Within this interval'));
+      cards.push(stat('GPU time / present', number(r.gpu_busy_ms_per_present, 2), 'ms', 'Batch totals; may overlap'));
+    }
+    $('stats').replaceChildren(...cards);
+  }
+  function renderHeader() {
+    const d = state.data;
+    $('source-name').textContent = d.demo ? (names[d.mode] ?? 'Synthetic demo') : d.filename;
+    $('source-badge').textContent = d.demo ? 'Synthetic data' : 'Imported capture';
+    $('source-badge').className = 'badge ' + (d.demo ? 'demo' : 'imported');
+    $('source-meta').textContent = d.type === 'trace' ? `${number((d.end - d.start) / 1000, 2)} s · ${number(d.tracks.length, 0)} timed tracks · ${number(d.tracks.reduce((n, t) => n + t.events.length, 0), 0)} events` : `${number(d.rows.length, 0)} periodic intervals · ${d.summary.title ?? d.summary.title_id ?? 'Game title not recorded'}`;
+    $('warnings').replaceChildren();
+    const messages = [...d.warnings];
+    if (d.type === 'intervals' && d.incomplete) messages.unshift('At least one interval has incomplete data; values may understate the actual work.');
+    $('warnings').hidden = !messages.length;
+    if (messages.length) { const list = el('ul'); messages.forEach(m => list.append(el('li', '', m))); $('warnings').append(list); }
+    $('footer-meta').textContent = d.demo ? 'Synthetic demo; not a measurement of your game or hardware.' : `commit: ${d.summary?.commit ?? 'not recorded'}${d.summary?.dirty ? ' · dirty' : ''} · local file analysis`;
+    $('download-demo').hidden = !d.demo;
+  }
+  function samplesForChart() {
+    const d = state.data;
+    if (d.type === 'intervals') return d.rows.map((r, i) => ({i, x: r.interval_start_s * 1000, end: r.interval_end_s * 1000, y: r.frame_ms.p99, other: r.frame_ms.p50}));
+    return d.frames.map((f, i) => ({i, x: f.start, end: f.end, y: f.ms}));
+  }
+  function thin(points, limit = 900) {
+    if (points.length <= limit) return points;
+    const step = Math.ceil(points.length / (limit / 2)), out = [];
+    for (let i = 0; i < points.length; i += step) {
+      const chunk = points.slice(i, i + step);
+      const lo = chunk.reduce((a, b) => a.y < b.y ? a : b), hi = chunk.reduce((a, b) => a.y > b.y ? a : b);
+      out.push(...(lo.i === hi.i ? [lo] : [lo, hi].sort((a, b) => a.i - b.i)));
+    }
+    return out;
+  }
+  function renderFrames() {
+    const d = state.data, all = samplesForChart(), points = thin(all), host = $('frame-chart');
+    const interval = d.type === 'intervals';
+    $('frame-title').textContent = interval ? 'Frame times across summary intervals' : 'Frame time';
+    $('frame-subtitle').textContent = interval ? 'Select an interval to inspect its statistics. Percentiles are not averaged across intervals.' : (all.length > points.length ? 'The chart preserves each group’s minimum and maximum. Statistics and frame selection use every sample.' : 'Click the chart to inspect that frame on the timeline.');
+    const legend = $('frame-legend'); legend.replaceChildren();
+    for (const [cls, label] of [[interval ? 'compile' : 'work', interval ? 'P99' : 'Frame time'], ...(interval ? [['work', 'P50']] : []), ['budget-swatch', 'Display target']]) {
+      const s = el('span'); s.append(el('i', cls === 'budget-swatch' ? cls : 'swatch ' + cls), document.createTextNode(label)); legend.append(s);
+    }
+    host.replaceChildren();
+    if (!all.length) { host.append(el('div', 'empty', 'No complete present intervals are available. Inspect the event timeline below.')); }
+    else {
+      const W = Math.max(520, host.clientWidth - 26), H = 235, left = 49, right = W - 18, top = 22, bottom = 198;
+      const minX = d.start, maxX = Math.max(d.end, minX + .001), budget = 1000 / state.target;
+      const maxY = Math.max(budget * 1.15, ...points.map(p => p.y * 1.12), 1);
+      const x = n => left + (n - minX) / (maxX - minX) * (right - left), y = n => bottom - n / maxY * (bottom - top);
+      const s = svgNode('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': interval ? 'Interval P99 and P50 chart in milliseconds' : 'Frame time in milliseconds against capture time in seconds'});
+      add(s, 'title', {}, 'The selected frame is marked by the bright vertical line.');
+      for (let i = 0; i <= 4; i++) {
+        const value = maxY * i / 4, yy = y(value);
+        add(s, 'line', {x1: left, y1: yy, x2: right, y2: yy, stroke: colors.line, 'stroke-width': 1});
+        add(s, 'text', {x: left - 8, y: yy + 3, 'text-anchor': 'end', class: 'tick'}, number(value, 0));
+      }
+      for (let i = 0; i <= 4; i++) add(s, 'text', {x: x(minX + (maxX - minX) * i / 4), y: bottom + 20, 'text-anchor': i === 0 ? 'start' : i === 4 ? 'end' : 'middle', class: 'tick'}, number((minX + (maxX - minX) * i / 4) / 1000, 2));
+      add(s, 'text', {x: left, y: 12, class: 'tick'}, 'ms');
+      add(s, 'text', {x: right, y: 233, 'text-anchor': 'end', class: 'tick'}, 'time (s)');
+      add(s, 'line', {x1: left, y1: y(budget), x2: right, y2: y(budget), stroke: colors.wait, 'stroke-dasharray': '5 5', opacity: .6});
+      if (interval) {
+        const p = all[state.selected];
+        add(s, 'rect', {x: x(p.x), y: top, width: Math.max(2, x(p.end) - x(p.x)), height: bottom - top, fill: colors.cyan, opacity: .07});
+      }
+      const drawPath = (key, color) => {
+        const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(p.x).toFixed(2)},${y(p[key]).toFixed(2)}`).join(' ');
+        add(s, 'path', {d: path, fill: 'none', stroke: color, 'stroke-width': 1.7, 'stroke-linejoin': 'round'});
+      };
+      if (interval) drawPath('other', colors.work);
+      drawPath('y', interval ? colors.compile : colors.work);
+      const selected = all[state.selected];
+      add(s, 'line', {x1: x(selected.x), x2: x(selected.x), y1: top, y2: bottom, stroke: colors.cyan, opacity: .6});
+      add(s, 'circle', {cx: x(selected.x), cy: y(selected.y), r: 4, fill: colors.cyan});
+      function pointAt(event) {
+        const rect = s.getBoundingClientRect(), px = (event.clientX - rect.left) / rect.width * W;
+        const ts = minX + Math.max(0, Math.min(1, (px - left) / (right - left))) * (maxX - minX);
+        let low = 0, high = all.length - 1;
+        while (low < high) { const mid = Math.ceil((low + high) / 2); if (all[mid].x <= ts) low = mid; else high = mid - 1; }
+        return all[low];
+      }
+      s.addEventListener('pointermove', e => { const p = pointAt(e); tip(`${interval ? 'Interval' : 'Frame'} ${interval ? p.i + 1 : d.frames[p.i].id}\n${number(p.y, 2)} ms${interval ? ' · P99' : ''}\n${number(p.x / 1000, 3)} s`, e); });
+      s.addEventListener('pointerleave', hideTip);
+      s.addEventListener('click', e => select(pointAt(e).i));
+      host.append(s);
+    }
+    const slider = $('frame-slider'); slider.max = Math.max(0, all.length - 1); slider.value = state.selected; slider.disabled = !all.length;
+    $('prev-frame').disabled = !all.length || state.selected === 0; $('next-frame').disabled = !all.length || state.selected === all.length - 1;
+    $('selection-label').textContent = all.length ? (interval ? `interval ${state.selected + 1} / ${all.length}` : `frame ${d.frames[state.selected].id} · ${number(d.frames[state.selected].ms, 2)} ms`) : 'no frame boundaries';
+    const slow = $('slow-buttons'); slow.replaceChildren();
+    all.slice().sort((a, b) => b.y - a.y).slice(0, 3).forEach(p => { const b = el('button', p.i === state.selected ? 'selected' : '', `${number(p.y)} ms`); b.title = interval ? `Interval ${p.i + 1}` : `Frame ${d.frames[p.i].id}`; b.onclick = () => select(p.i); slow.append(b); });
+  }
+  function bounds() {
+    const d = state.data;
+    if (!d.frames.length || !state.zoom) return [d.start, d.end];
+    const half = Math.floor(state.zoom / 2), first = Math.max(0, state.selected - half), last = Math.min(d.frames.length - 1, state.selected + half);
+    return [d.frames[first].start, d.frames[last].end];
+  }
+  function matches(t, e) { const q = state.search.toLowerCase(); return !q || t.name.toLowerCase().includes(q) || e.name.toLowerCase().includes(q); }
+  function eventDetails(t, e, a) {
+    state.batch = e.batch;
+    const detail = $('event-detail'); detail.replaceChildren();
+    const strong = el('strong', '', e.name); strong.dir = 'ltr';
+    detail.append(strong, document.createTextNode(` · ${t.name} [${t.tid}] · full scope: ${number(e.end - e.start, 3)} ms · in range: ${number(Math.max(0, Math.min(e.end, a.end) - Math.max(e.start, a.begin)), 3)} ms`));
+    if (e.batch !== null) { detail.append(document.createTextNode(` · batch ${String(e.batch)} · Events in this batch are highlighted. `)); const clear = el('button', 'text-button', 'Clear highlight'); clear.onclick = () => { state.batch = null; renderTimeline(a); detail.textContent = 'Select an event bar to inspect its details.'; }; detail.append(clear); }
+    renderTimeline(a);
+  }
+  function renderTimeline(a) {
+    const host = $('timeline'); host.replaceChildren();
+    const d = state.data;
+    $('zoom').disabled = d.type !== 'trace'; $('search').disabled = d.type !== 'trace';
+    if (d.type !== 'trace') {
+      const row = d.rows[state.selected];
+      $('timeline-subtitle').textContent = `${number(row.interval_start_s, 3)} to ${number(row.interval_end_s, 3)} s · event details unavailable`;
+      host.append(el('div', 'empty', 'Only periodic summaries were imported. Open an aps5-trace file to inspect concurrent events.')); $('event-detail').textContent = 'Periodic summaries do not provide individual events or call stacks.'; return;
+    }
+    $('timeline-subtitle').textContent = `${number(a.begin / 1000, 3)} to ${number(a.end / 1000, 3)} s · threads with matching names keep separate IDs`;
+    const tracks = a.threads.map(t => ({t, events: t.events.filter(e => e.start < a.end && e.end > a.begin && matches(t, e))})).filter(row => row.events.length);
+    const count = tracks.reduce((n, row) => n + row.events.length, 0);
+    if (count > 3000) { host.append(el('div', 'empty', `${number(count, 0)} events in this range. Zoom to 1 or 5 frames, or search for an event. Statistics still include every event.`)); return; }
+    if (!tracks.length) { host.append(el('div', 'empty', 'No events match this range and filter.')); return; }
+    const W = Math.max(820, host.clientWidth - 20), left = 188, right = W - 16, span = Math.max(.001, a.span), x = n => left + (n - a.begin) / span * (right - left);
+    const s = svgNode('svg', {viewBox: `0 0 ${W} 300`, role: 'img', 'aria-label': 'Timeline: each lane is a separate thread; bars show elapsed time.'});
+    s.style.minWidth = W + 'px'; host.style.maxHeight = '570px'; host.style.overflow = 'auto';
+    let yy = 36;
+    for (let i = 0; i <= 4; i++) add(s, 'text', {x: x(a.begin + a.span * i / 4), y: 17, 'text-anchor': i === 0 ? 'start' : i === 4 ? 'end' : 'middle', class: 'tick'}, number((a.begin + a.span * i / 4) / 1000, 3) + ' s');
+    for (const {t, events} of tracks) {
+      const minDepth = Math.min(...events.map(e => e.depth)), depth = Math.max(...events.map(e => e.depth)) - minDepth;
+      const height = Math.max(46, 26 + (depth + 1) * 17);
+      add(s, 'line', {x1: 8, y1: yy - 7, x2: right, y2: yy - 7, stroke: colors.line});
+      const label = add(s, 'text', {x: 8, y: yy + 8, class: 'lane-name'}, t.name.length > 23 ? t.name.slice(0, 21) + '…' : t.name);
+      add(label, 'title', {}, t.name);
+      add(s, 'text', {x: 8, y: yy + 24, class: 'tick'}, `tid ${t.tid} · ${number(t.recorded, 2)} ms`);
+      const frame = d.frames[state.selected];
+      if (frame) add(s, 'rect', {x: x(Math.max(frame.start, a.begin)), y: yy - 3, width: Math.max(0, x(Math.min(frame.end, a.end)) - x(Math.max(frame.start, a.begin))), height: height - 8, fill: colors.cyan, opacity: .055, 'pointer-events': 'none'});
+      for (const e of events) {
+        const bx = x(Math.max(a.begin, e.start)), width = Math.max(.8, x(Math.min(a.end, e.end)) - bx), by = yy + (e.depth - minDepth) * 17;
+        const opacity = state.batch !== null && e.batch !== state.batch ? .20 : e.depth === minDepth && !t.gpu ? .60 : .92;
+        const rect = add(s, 'rect', {x: bx, y: by, width, height: 13, rx: 2, fill: colors[e.kind], opacity, class: 'event-bar', tabindex: 0, role: 'button', 'aria-label': `${e.name}, ${t.name}, ${number(e.end - e.start, 3)} ms`});
+        const tooltip = `${e.name}\n${t.name} [${t.tid}]\n${number(e.end - e.start, 3)} ms${e.batch !== null ? '\nbatch ' + String(e.batch) : ''}`;
+        rect.addEventListener('pointermove', ev => tip(tooltip, ev)); rect.addEventListener('pointerleave', hideTip);
+        rect.addEventListener('click', () => { hideTip(); eventDetails(t, e, a); });
+        rect.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); eventDetails(t, e, a); } });
+        if (width > 65) add(s, 'text', {x: bx + 4, y: by + 10, class: 'event-label'}, e.name.slice(0, Math.max(0, Math.floor((width - 10) / 5.6))));
+      }
+      yy += height;
+    }
+    s.setAttribute('viewBox', `0 0 ${W} ${yy + 4}`); s.style.height = yy + 4 + 'px'; host.append(s);
+  }
+  function insight(title, body, evidence, kind) {
+    const item = el('div', 'insight'), label = el('div', 'insight-label'); label.append(el('i', 'swatch ' + kind), document.createTextNode(title)); item.append(label, el('p', '', body));
+    if (evidence) item.append(el('div', 'evidence', evidence)); return item;
+  }
+  function renderInsights(a) {
+    const box = $('insights'); box.replaceChildren(); const d = state.data;
+    if (d.type === 'intervals') {
+      const r = d.rows[state.selected]; $('investigation-range').textContent = `Interval ${state.selected + 1} · ${number(r.interval_end_s - r.interval_start_s)} s`;
+      box.append(insight('Frame time variation', 'A large gap between the median and P99 identifies a useful interval for a detailed trace.', `P50 ${number(r.frame_ms.p50)} · P99 ${number(r.frame_ms.p99)} ms`, 'compile'));
+      box.append(insight('Investigating a bottleneck', 'This file does not contain execution order or wait locations. Expensive phases provide a starting point for investigation.', '', 'work')); return;
+    }
+    $('investigation-range').textContent = `${number(a.span, 2)} ms of the capture`;
+    const compile = a.phases.filter(p => p.kind === 'compile')[0];
+    const waiter = a.threads.filter(t => !t.gpu).sort((x, y) => y.waiting - x.waiting)[0];
+    const worker = a.threads.filter(t => !t.gpu).sort((x, y) => y.working - x.working)[0];
+    if (compile && compile.ms > a.span * .20) box.append(insight('Compilation overlaps this range', 'Substantial compilation time was recorded in this range. Capture the same scene again with a warm cache to investigate caching effects.', `${compile.name} · ${number(compile.ms)} ms`, 'compile'));
+    if (waiter && waiter.waiting > a.span * .25) box.append(insight('Wait time to investigate', 'Inspect the wait events on the timeline. Waiting for a lock, the GPU or new work can have different causes.', `${waiter.name} · ${number(waiter.waiting)} ms wait`, 'wait'));
+    if (a.gpuMs !== null && a.span && a.gpuMs / a.span > .80) box.append(insight('High GPU activity coverage', 'Recorded GPU activity covers much of this range. Correlation alone does not establish the cause of a slow frame.', `${number(a.gpuMs)} / ${number(a.span)} ms`, 'gpu'));
+    else if (worker && worker.working > a.span * .50) box.append(insight('Long scopes on one thread', 'Inspect this thread for long-running work. Scope duration can also include time spent descheduled by the operating system.', `${worker.name} · ${number(worker.working)} ms`, 'work'));
+    if (a.gpuMs === null) box.append(insight('GPU data unavailable', 'This capture cannot establish GPU idleness. Only the recorded execution paths can be inspected.', '', 'gpu'));
+    if (!box.children.length) box.append(insight('Start with a slow frame', 'Select one of the slowest frames and inspect long scopes. This range does not provide a clear indication of a specific cause.', '', 'work'));
+    if (d.incomplete) box.append(insight('Incomplete evidence', 'Events were dropped from this capture. Measurements include only the remaining data.', '', 'wait'));
+  }
+  function threadBar(name, value, work, wait, unknown, gpu) {
+    const row = el('div', 'thread-row'), heading = el('div', 'thread-label'); heading.append(el('span', 'name', name), el('span', 'value', value));
+    const track = el('div', 'track'); track.setAttribute('role', 'img'); track.setAttribute('aria-label', `${name}: ${value}`);
+    for (const [amount, color] of [[work, gpu ? 'gpu' : 'work'], [wait, 'wait'], [unknown, 'unknown']]) { const bar = el('span', color); bar.style.width = Math.max(0, amount) + '%'; track.append(bar); }
+    row.append(heading, track); return row;
+  }
+  function renderTables(a) {
+    const d = state.data, bars = $('thread-bars'), rows = $('hot-rows'); bars.replaceChildren(); rows.replaceChildren();
+    let phases;
+    if (d.type === 'trace') {
+      $('occupancy-title').textContent = 'Recorded time per thread'; $('occupancy-subtitle').textContent = 'Selected range; overlapping time is counted once.';
+      $('hot-time-heading').textContent = 'Time in range'; $('hot-subtitle').textContent = 'Includes child scopes; rows do not add up to a frame cost. Search filters only this table and the timeline.';
+      for (const t of a.threads) bars.append(threadBar(`${t.name} [${t.tid}]`, `${number(t.working)} work · ${number(t.waiting)} wait ms`, a.span ? t.working / a.span * 100 : 0, a.span ? t.waiting / a.span * 100 : 0, a.span ? t.unknown / a.span * 100 : 100, t.gpu));
+      const query = state.search.toLowerCase();
+      const matchingNames = new Set(d.tracks.filter(t => t.name.toLowerCase().includes(query)).flatMap(t => t.events.map(e => e.name)));
+      phases = a.phases.filter(p => !query || p.name.toLowerCase().includes(query) || matchingNames.has(p.name));
+    } else {
+      const r = d.rows[state.selected], workers = Object.entries(r.worker_busy_pct ?? {}).sort((x, y) => y[1] - x[1]);
+      const scale = workers.reduce((maximum, worker) => Math.max(maximum, worker[1]), 100);
+      $('occupancy-title').textContent = 'Worker occupancy in recorded scopes'; $('occupancy-subtitle').textContent = `May include waits; this is not CPU utilization. Chart scale: 0–${number(scale, 0)}%.`;
+      $('hot-time-heading').textContent = 'ms / frame'; $('hot-subtitle').textContent = 'Only phases listed in the summary are shown. An omitted phase may still have a cost.';
+      for (const [name, value] of workers) bars.append(threadBar(name, number(value) + '%', value / scale * 100, 0, 100 - value / scale * 100, false));
+      if (!workers.length) bars.append(el('div', 'empty', 'No worker statistics were recorded for this interval.'));
+      phases = Object.entries(r.top_phases_ms_per_frame ?? {}).map(([name, ms]) => ({name, ms, kind: M.category(name, false), calls: null})).sort((x, y) => y.ms - x.ms);
+    }
+    document.querySelector('.bottom-legend').hidden = d.type !== 'trace';
+    if (!phases.length) { const tr = el('tr'), td = el('td', 'muted', 'No events to display.'); td.colSpan = 3; tr.append(td); rows.append(tr); }
+    for (const phase of phases.slice(0, 10)) { const tr = el('tr'), name = el('td'), scope = el('span', 'scope-name'); scope.append(el('i', 'swatch ' + phase.kind), document.createTextNode(phase.name)); name.append(scope); tr.append(name, el('td', '', number(phase.ms, 2) + ' ms'), el('td', '', phase.calls === null ? '—' : number(phase.calls, 0))); rows.append(tr); }
+  }
+  function render() {
+    renderHeader(); renderStats(); renderFrames();
+    const d = state.data;
+    if (d.type === 'trace') { const [begin, end] = bounds(); state.analysis = M.analyze(d, begin, end); }
+    else state.analysis = null;
+    $('event-detail').textContent = 'Select an event bar to inspect its details.';
+    renderTimeline(state.analysis); renderInsights(state.analysis); renderTables(state.analysis);
+  }
+  async function readFile(file) {
+    const cap = 64 * 1024 * 1024;
+    if (file.size > cap) throw new Error('The file exceeds 64 MiB. Import a shorter capture.');
+    let stream = file.stream();
+    if (/\.gz$/i.test(file.name)) {
+      if (!window.DecompressionStream) throw new Error('This browser cannot decompress gzip. Use an uncompressed JSON file or a newer browser.');
+      stream = stream.pipeThrough(new DecompressionStream('gzip'));
+    }
+    const reader = stream.getReader(), decoder = new TextDecoder('utf-8', {fatal: true}); let bytes = 0, text = '';
+    try { for (;;) { const {value, done} = await reader.read(); if (done) break; bytes += value.length; if (bytes > cap) throw new Error('The decompressed file exceeds 64 MiB. Import a shorter capture.'); text += decoder.decode(value, {stream: true}); } return text + decoder.decode(); }
+    finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
+  }
+  async function loadFiles(fileList) {
+    const files = Array.from(fileList); if (!files.length) return;
+    const button = $('open-files'); button.disabled = true; button.textContent = 'Reading capture…';
+    try {
+      if (files.length > 8) throw new Error('Select at most 8 related files at a time.');
+      const traces = [], summaries = [];
+      for (const file of files) {
+        const text = await readFile(file);
+        if (/\.jsonl(?:\.gz)?$/i.test(file.name)) summaries.push({name: file.name, rows: M.jsonl(text)});
+        else {
+          let doc; try { doc = JSON.parse(text.replace(/^\uFEFF/, '')); } catch { throw new Error(`${file.name}: The JSON file is incomplete or invalid.`); }
+          if (!Array.isArray(doc) && !doc?.traceEvents) throw new Error(`${file.name}: A raw trace is required. trace_digest and bench outputs are not supported in this version.`);
+          traces.push({name: file.name, doc});
+        }
+      }
+      const records = summaries.flatMap(s => s.rows);
+      const groups = traces.length ? traces.map(t => M.trace(t.doc, t.name, records)) : summaries.flatMap(s => M.intervals(s.rows, s.name));
+      if (!groups.length) throw new Error('No supported capture was found.');
+      setGroups(groups);
+    } catch (error) { showError(error); }
+    finally { button.disabled = false; button.textContent = 'Open capture'; $('file-input').value = ''; }
+  }
+  function download(name, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json;charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  $('open-files').onclick = () => $('file-input').click();
+  $('file-input').onchange = e => loadFiles(e.target.files);
+  $('help-toggle').onclick = () => { $('capture-help').hidden = !$('capture-help').hidden; $('help-toggle').setAttribute('aria-expanded', String(!$('capture-help').hidden)); };
+  $('load-demo').onclick = () => setGroups([M.demo($('demo-mode').value)]);
+  $('capture-picker').onchange = e => setData(state.groups[Number(e.target.value)]);
+  $('target').onchange = e => { state.target = Number(e.target.value); render(); };
+  $('zoom').onchange = e => { state.zoom = Number(e.target.value); state.batch = null; render(); };
+  $('search').oninput = e => { state.search = e.target.value.trim(); renderTimeline(state.analysis); renderTables(state.analysis); };
+  $('frame-slider').oninput = e => select(Number(e.target.value));
+  $('prev-frame').onclick = () => select(state.selected - 1); $('next-frame').onclick = () => select(state.selected + 1);
+  $('frame-chart').onkeydown = e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); select(state.selected + (e.key === 'ArrowRight' ? 1 : -1)); } };
+  $('download-demo').onclick = () => download(`anyps5-synthetic-${state.data.mode}.json`, state.data.document);
+  $('export-report').onclick = () => {
+    const d = state.data;
+    const report = {format: 'trace-lab/1', source: d.filename, synthetic: d.demo, target_fps: state.target, warnings: d.warnings, incomplete: d.incomplete, identity: d.summary};
+    if (d.type === 'trace') { const a = state.analysis; report.capture = M.stats(d, 1000 / state.target); report.range_ms = [a.begin, a.end]; report.threads = a.threads.map(t => ({name: t.name, tid: t.tid, work_scope_ms: t.working, wait_scope_ms: t.waiting, untraced_ms: t.unknown})); report.inclusive_phases = a.phases; }
+    else report.interval = d.rows[state.selected];
+    download('anyps5-inspection.json', report);
+  };
+  const drop = $('drop-zone');
+  for (const name of ['dragenter', 'dragover']) drop.addEventListener(name, e => { e.preventDefault(); drop.classList.add('drag'); });
+  for (const name of ['dragleave', 'drop']) drop.addEventListener(name, e => { e.preventDefault(); drop.classList.remove('drag'); });
+  drop.addEventListener('drop', e => loadFiles(e.dataTransfer.files));
+  window.addEventListener('dragover', e => e.preventDefault()); window.addEventListener('drop', e => e.preventDefault());
+  let resizeTimer; window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (state.data) render(); }, 150); });
+  setGroups([M.demo('compile')]);
+  window.TraceLabApp = {loadFiles, getData: () => state.data, getAnalysis: () => state.analysis};
+})();
+</script>
+</body>
+</html>
