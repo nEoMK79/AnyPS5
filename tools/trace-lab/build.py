@@ -9,7 +9,7 @@ def main():
     parser.add_argument("--check", action="store_true", help="Check the generated HTML without writing it")
     args = parser.parse_args()
     page = (root / "index.template.html").read_text(encoding="utf-8")
-    for marker, source in (("STYLE", "style.css"), ("MODEL", "model.js"), ("APP", "app.js")):
+    for marker, source in (("STYLE", "style.css"), ("MODEL", "model.js"), ("LOADER", "loader.js"), ("APP", "app.js")):
         page = page.replace("__TRACE_LAB_" + marker + "__", (root / source).read_text(encoding="utf-8"))
     if args.check:
         if not args.output.is_file() or args.output.read_text(encoding="utf-8") != page:

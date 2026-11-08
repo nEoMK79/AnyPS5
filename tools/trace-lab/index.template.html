@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
 <title>AnyPS5 · Trace Lab | Performance Analyzer</title>
 <style>__TRACE_LAB_STYLE__</style>
 </head>
@@ -16,28 +16,39 @@
   </header>
   <section class="hero">
     <div><div class="eyebrow">PROFILING WORKSPACE</div><h1>Behind every frame</h1><p>Explore slow frames, thread activity and waits on one timeline.</p></div>
-    <div class="hero-actions"><button id="open-files" class="primary">Open capture</button><button id="help-toggle" class="secondary" aria-expanded="false" aria-controls="capture-help">Capture guide</button></div>
+    <div class="hero-actions"><button id="open-files" class="primary">Open capture</button><button id="help-toggle" class="secondary" aria-expanded="false" aria-controls="capture-help">Capture controls</button></div>
+  </section>
+  <section class="session-panel" aria-label="Analyzer session">
+    <div><strong id="session-status" role="status">Analyzer idle</strong><p id="session-note">Saved files only. No game is being monitored.</p></div>
+    <button id="stop-analysis" class="secondary" disabled>Stop &amp; unload</button>
   </section>
   <input id="file-input" type="file" accept=".json,.jsonl,.gz" multiple hidden aria-label="Select capture files">
   <section class="source-panel" id="drop-zone" aria-label="Data source">
-    <div class="source-main"><span class="status-dot" aria-hidden="true"></span><div><div class="source-top"><strong id="source-name">Shader compilation demo</strong><span id="source-badge" class="badge demo">Synthetic data</span></div><div id="source-meta" class="small muted">Explore the views with a sample capture</div></div></div>
+    <div class="source-main"><span class="status-dot" aria-hidden="true"></span><div><div class="source-top"><strong id="source-name">No capture loaded</strong><span id="source-badge" class="badge neutral">Idle</span></div><div id="source-meta" class="small muted">Open a saved capture or load a synthetic demo.</div></div></div>
     <div class="source-controls"><label for="demo-mode">Demo scenario</label><select id="demo-mode"><option value="compile">Shader compilation stutter</option><option value="cpu">Busy thread</option><option value="gpu">Busy GPU</option><option value="wait">Lock contention</option></select><button id="load-demo" class="secondary compact">Load demo</button></div>
     <div class="drop-hint">Drop a <bdi>.json / .json.gz</bdi> trace and its companion summary, or <bdi>aps5-summary.jsonl</bdi>, here. Files are processed on this device.</div>
   </section>
   <div id="error" class="error" role="alert" hidden></div>
   <section id="capture-help" class="panel help" hidden>
-    <div class="panel-heading"><div><h2>Record a short capture in AnyPS5</h2><p>Run this in PowerShell from the converted game directory. Replace the executable name with the one for your game.</p></div></div>
-    <pre dir="ltr">$env:APS5_TRACE_SECONDS = '30:10'
-$env:APS5_PROFILE_GPU = '1'
-$env:APS5_TRACE_DIR = (Join-Path $PWD 'trace-output')
-New-Item -ItemType Directory -Force $env:APS5_TRACE_DIR
-.\app.exe</pre>
-    <p>This records a 10-second window starting 30 seconds after the first present. Open the trace and summary from the same run together. If the game exits before the window closes, no trace file is written.</p>
-    <p>For longer sessions, periodic summaries are available with <code dir="ltr">APS5_TRACE_SUMMARY_EVERY=5</code>. They do not contain individual thread events.</p>
+    <div class="panel-heading"><div><h2>Choose how the next game run records data</h2><p>This page prepares a launch command. It does not connect to or control a running game.</p></div></div>
+    <div class="capture-options">
+      <label>Capture mode<select id="capture-mode"><option value="off">Off</option><option value="manual">Manual · 15 seconds</option><option value="timed">Timed · 15 seconds</option></select></label>
+      <label>Delay after first present (s)<input id="capture-delay" type="number" min="0" max="86400" step="1" value="30" required disabled></label>
+      <label>Event buffer per worker<select id="capture-events" disabled><option value="262144">Default · 262,144 events</option><option value="65536">Smaller · 65,536 events</option></select></label>
+      <label class="checkbox-label"><input id="capture-gpu" type="checkbox" disabled>Include GPU command details</label>
+    </div>
+    <p id="capture-explanation"></p>
+    <pre id="launch-command" dir="ltr" tabindex="0"></pre>
+    <button id="copy-launch" class="secondary compact">Copy launch command</button><span id="copy-status" class="small muted" role="status"></span>
+    <p>Get <code>tools/trace-lab/capture.py</code> from the repository. Replace its placeholder path and the game executable, then run the command in PowerShell from the converted game directory. Trace settings apply only to the launched process.</p>
+    <p>The 15-second window closes on the first present at least 15 seconds after it opens. The game continues. If it stalls or exits before that present, the trace may not be written. A manual trigger is checked at most once per 250 ms while waiting, and each launch captures once.</p>
+    <p>Recording has overhead. Default event buffers use about 10 MiB per queue worker, presenter or draw worker; the smaller option uses about 2.5 MiB and can drop more events. Other buffers and output formatting use additional memory. Buffers can remain allocated, and GPU timestamp overhead can continue outside the window. Relaunch with Off for an untraced run; Stop &amp; unload affects this viewer only.</p>
     <p>These views show elapsed time inside scopes, not measured CPU utilization. Nested or concurrent durations cannot be added to obtain a frame cost. Missing events do not establish idle time. The GPU track may omit batches at the end of the capture.</p>
     <p>AnyPS5 has a live overlay on <kbd>F10</kbd>. This tool reads saved captures. RAM/VRAM usage charts require memory-usage data that is not available in the trace format supported here.</p>
     <a href="https://github.com/boykopovar/AnyPS5/blob/acf04f85adc06c52524850e709253e232a1e5e02/docs/dev/BUILD.md#performance-trace" target="_blank" rel="noreferrer">Capture format and measurement limits in the project documentation ↗</a>
   </section>
+  <section id="empty-state" class="panel empty"><h2>Analyzer idle</h2><p>Open a saved capture when you are ready to inspect it. Loading and analysis begin only on request.</p><p>Use Capture controls to prepare an optional 15-second recording for your next game run.</p></section>
+  <div id="analysis-view" hidden>
   <div id="capture-picker-wrap" class="picker-row" hidden><label for="capture-picker">Capture segment</label><select id="capture-picker"></select><span class="muted small">Different runs and configurations are kept separate.</span></div>
   <div id="warnings" class="notice" role="status" hidden></div>
   <div class="section-label"><span id="stats-label">Entire capture</span><div class="budget-control"><label for="target">Display target</label><select id="target"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option><option value="120">120 FPS</option><option value="144">144 FPS</option></select><span id="budget-label" dir="ltr">16.67 ms</span></div></div>
@@ -64,10 +75,12 @@ New-Item -ItemType Directory -Force $env:APS5_TRACE_DIR
     <div class="panel thread-panel"><div class="panel-heading"><div><h2 id="occupancy-title">Recorded time per thread</h2><p id="occupancy-subtitle">Selected range; overlapping time is counted once.</p></div><span class="badge neutral">wall time</span></div><div id="thread-bars"></div><div class="legend bottom-legend"><span><i class="swatch work"></i>Non-wait scopes</span><span><i class="swatch wait"></i>Wait scopes</span><span><i class="swatch unknown"></i>Untraced</span></div></div>
     <div class="panel hot-panel"><div class="panel-heading"><div><h2>Most expensive events</h2><p id="hot-subtitle">Durations include child scopes; adding rows does not give a frame cost.</p></div></div><div class="table-wrap"><table><thead><tr><th>Event</th><th id="hot-time-heading">Time in range</th><th>Count</th></tr></thead><tbody id="hot-rows"></tbody></table></div></div>
   </section>
-  <footer><span>TRACE LAB / 01 <b>·</b> Local AnyPS5 capture analysis</span><button id="download-demo" class="text-button">Download demo trace</button><span id="footer-meta">Synthetic demo; not a measurement of your game or hardware.</span></footer>
+  </div>
+  <footer><span>TRACE LAB / 01 <b>·</b> Local AnyPS5 capture analysis</span><button id="download-demo" class="text-button" hidden>Download demo trace</button><span id="footer-meta">Offline analysis · no capture loaded</span></footer>
 </div>
 <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
-<script>__TRACE_LAB_MODEL__</script>
+<script id="trace-model">__TRACE_LAB_MODEL__</script>
+<script id="trace-loader" type="text/plain">__TRACE_LAB_LOADER__</script>
 <script>__TRACE_LAB_APP__</script>
 </body>
 </html>

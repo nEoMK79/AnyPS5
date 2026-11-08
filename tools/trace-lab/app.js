@@ -1,7 +1,8 @@
 (function () {
   'use strict';
   const M = window.TraceLabModel, $ = id => document.getElementById(id);
-  const state = {data: null, groups: [], selected: 0, target: 60, zoom: 5, search: '', batch: null, analysis: null};
+  const state = {data: null, groups: [], selected: 0, target: 60, zoom: 5, search: '', batch: null, analysis: null, samples: [], chartPoints: [], slowest: [], frameStats: null};
+  let loading = null, resizeTimer;
   const names = {compile: 'Shader compilation stutter', cpu: 'Busy thread', gpu: 'Busy GPU', wait: 'Lock contention'};
   const colors = {work: '#72a9ff', wait: '#efbb69', compile: '#bd97f5', memory: '#68d6b0', gpu: '#ed947c', muted: '#9daac0', line: '#283142', cyan: '#69d9e7'};
   const number = (n, decimals = 1) => n == null || !Number.isFinite(n) ? '—' : n.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
@@ -20,12 +21,16 @@
     t.style.top = Math.max(8, Math.min(y + 15, window.innerHeight - t.offsetHeight - 8)) + 'px';
   }
   function hideTip() { $('tooltip').hidden = true; }
-  function length() { return state.data.type === 'trace' ? state.data.frames.length : state.data.rows.length; }
-  function select(index) { state.selected = Math.max(0, Math.min(Math.max(0, length() - 1), index)); state.batch = null; hideTip(); render(); }
+  function length() { return !state.data ? 0 : state.data.type === 'trace' ? state.data.frames.length : state.data.rows.length; }
+  function select(index) { if (!state.data) return; state.selected = Math.max(0, Math.min(Math.max(0, length() - 1), index)); state.batch = null; hideTip(); render(); }
   function setData(data) {
     state.data = data; state.search = ''; state.batch = null; $('search').value = '';
     const values = data.type === 'trace' ? data.frames.map(f => f.ms) : data.rows.map(r => r.frame_ms.p99);
     state.selected = values.reduce((best, value, i) => value > values[best] ? i : best, 0);
+    state.samples = data.type === 'trace' ? data.frames.map((f, i) => ({i, x: f.start, end: f.end, y: f.ms})) : data.rows.map((r, i) => ({i, x: r.interval_start_s * 1000, end: r.interval_end_s * 1000, y: r.frame_ms.p99, other: r.frame_ms.p50}));
+    state.chartPoints = thin(state.samples);
+    state.slowest = state.samples.slice().sort((a, b) => b.y - a.y).slice(0, 3);
+    state.frameStats = M.stats(data, 1000 / state.target);
     $('error').hidden = true; render();
   }
   function showError(error) { $('error').textContent = error.message || String(error); $('error').hidden = false; }
@@ -46,7 +51,7 @@
     const d = state.data, budget = 1000 / state.target, cards = [];
     $('budget-label').textContent = number(budget, 2) + ' ms';
     if (d.type === 'trace') {
-      const s = M.stats(d, budget);
+      const s = state.frameStats;
       $('stats-label').textContent = 'Entire capture · ' + number(s.count, 0) + ' complete present intervals';
       cards.push(stat('Average present rate', number(s.fps), 'FPS', 'Frame count / total duration'));
       cards.push(stat('Average frame time', number(s.mean, 2), 'ms', 'Across all complete intervals'));
@@ -79,9 +84,7 @@
     $('download-demo').hidden = !d.demo;
   }
   function samplesForChart() {
-    const d = state.data;
-    if (d.type === 'intervals') return d.rows.map((r, i) => ({i, x: r.interval_start_s * 1000, end: r.interval_end_s * 1000, y: r.frame_ms.p99, other: r.frame_ms.p50}));
-    return d.frames.map((f, i) => ({i, x: f.start, end: f.end, y: f.ms}));
+    return state.samples;
   }
   function thin(points, limit = 900) {
     if (points.length <= limit) return points;
@@ -94,7 +97,7 @@
     return out;
   }
   function renderFrames() {
-    const d = state.data, all = samplesForChart(), points = thin(all), host = $('frame-chart');
+    const d = state.data, all = samplesForChart(), points = state.chartPoints, host = $('frame-chart');
     const interval = d.type === 'intervals';
     $('frame-title').textContent = interval ? 'Frame times across summary intervals' : 'Frame time';
     $('frame-subtitle').textContent = interval ? 'Select an interval to inspect its statistics. Percentiles are not averaged across intervals.' : (all.length > points.length ? 'The chart preserves each group’s minimum and maximum. Statistics and frame selection use every sample.' : 'Click the chart to inspect that frame on the timeline.');
@@ -149,7 +152,7 @@
     $('prev-frame').disabled = !all.length || state.selected === 0; $('next-frame').disabled = !all.length || state.selected === all.length - 1;
     $('selection-label').textContent = all.length ? (interval ? `interval ${state.selected + 1} / ${all.length}` : `frame ${d.frames[state.selected].id} · ${number(d.frames[state.selected].ms, 2)} ms`) : 'no frame boundaries';
     const slow = $('slow-buttons'); slow.replaceChildren();
-    all.slice().sort((a, b) => b.y - a.y).slice(0, 3).forEach(p => { const b = el('button', p.i === state.selected ? 'selected' : '', `${number(p.y)} ms`); b.title = interval ? `Interval ${p.i + 1}` : `Frame ${d.frames[p.i].id}`; b.onclick = () => select(p.i); slow.append(b); });
+    state.slowest.forEach(p => { const b = el('button', p.i === state.selected ? 'selected' : '', `${number(p.y)} ms`); b.title = interval ? `Interval ${p.i + 1}` : `Frame ${d.frames[p.i].id}`; b.onclick = () => select(p.i); slow.append(b); });
   }
   function bounds() {
     const d = state.data;
@@ -245,7 +248,7 @@
       $('hot-time-heading').textContent = 'Time in range'; $('hot-subtitle').textContent = 'Includes child scopes; rows do not add up to a frame cost. Search filters only this table and the timeline.';
       for (const t of a.threads) bars.append(threadBar(`${t.name} [${t.tid}]`, `${number(t.working)} work · ${number(t.waiting)} wait ms`, a.span ? t.working / a.span * 100 : 0, a.span ? t.waiting / a.span * 100 : 0, a.span ? t.unknown / a.span * 100 : 100, t.gpu));
       const query = state.search.toLowerCase();
-      const matchingNames = new Set(d.tracks.filter(t => t.name.toLowerCase().includes(query)).flatMap(t => t.events.map(e => e.name)));
+      const matchingNames = query ? new Set(d.tracks.filter(t => t.name.toLowerCase().includes(query)).flatMap(t => t.events.map(e => e.name))) : null;
       phases = a.phases.filter(p => !query || p.name.toLowerCase().includes(query) || matchingNames.has(p.name));
     } else {
       const r = d.rows[state.selected], workers = Object.entries(r.worker_busy_pct ?? {}).sort((x, y) => y[1] - x[1]);
@@ -261,6 +264,8 @@
     for (const phase of phases.slice(0, 10)) { const tr = el('tr'), name = el('td'), scope = el('span', 'scope-name'); scope.append(el('i', 'swatch ' + phase.kind), document.createTextNode(phase.name)); name.append(scope); tr.append(name, el('td', '', number(phase.ms, 2) + ' ms'), el('td', '', phase.calls === null ? '—' : number(phase.calls, 0))); rows.append(tr); }
   }
   function render() {
+    updateSession();
+    if (!state.data) return;
     renderHeader(); renderStats(); renderFrames();
     const d = state.data;
     if (d.type === 'trace') { const [begin, end] = bounds(); state.analysis = M.analyze(d, begin, end); }
@@ -268,39 +273,103 @@
     $('event-detail').textContent = 'Select an event bar to inspect its details.';
     renderTimeline(state.analysis); renderInsights(state.analysis); renderTables(state.analysis);
   }
-  async function readFile(file) {
-    const cap = 64 * 1024 * 1024;
-    if (file.size > cap) throw new Error('The file exceeds 64 MiB. Import a shorter capture.');
-    let stream = file.stream();
-    if (/\.gz$/i.test(file.name)) {
-      if (!window.DecompressionStream) throw new Error('This browser cannot decompress gzip. Use an uncompressed JSON file or a newer browser.');
-      stream = stream.pipeThrough(new DecompressionStream('gzip'));
-    }
-    const reader = stream.getReader(), decoder = new TextDecoder('utf-8', {fatal: true}); let bytes = 0, text = '';
-    try { for (;;) { const {value, done} = await reader.read(); if (done) break; bytes += value.length; if (bytes > cap) throw new Error('The decompressed file exceeds 64 MiB. Import a shorter capture.'); text += decoder.decode(value, {stream: true}); } return text + decoder.decode(); }
-    finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
+  function updateSession() {
+    const busy = Boolean(loading), loaded = Boolean(state.data);
+    $('open-files').disabled = busy;
+    $('open-files').textContent = busy ? 'Reading capture…' : 'Open capture';
+    $('stop-analysis').disabled = !busy && !loaded;
+    $('session-status').textContent = busy ? 'Loading saved capture' : loaded ? 'Capture loaded · on-demand analysis' : 'Analyzer idle';
+    $('session-note').textContent = busy ? 'Stop & unload cancels parsing and releases the current capture.' : loaded ? 'No game monitoring. Calculations update when you use the controls.' : 'Saved files only. No game is being monitored.';
+    $('analysis-view').hidden = !loaded;
+    $('analysis-view').inert = busy;
+    $('empty-state').hidden = loaded || busy;
+    $('capture-picker').disabled = busy;
   }
-  async function loadFiles(fileList) {
-    const files = Array.from(fileList); if (!files.length) return;
-    const button = $('open-files'); button.disabled = true; button.textContent = 'Reading capture…';
-    try {
-      if (files.length > 8) throw new Error('Select at most 8 related files at a time.');
-      const traces = [], summaries = [];
-      for (const file of files) {
-        const text = await readFile(file);
-        if (/\.jsonl(?:\.gz)?$/i.test(file.name)) summaries.push({name: file.name, rows: M.jsonl(text)});
-        else {
-          let doc; try { doc = JSON.parse(text.replace(/^\uFEFF/, '')); } catch { throw new Error(`${file.name}: The JSON file is incomplete or invalid.`); }
-          if (!Array.isArray(doc) && !doc?.traceEvents) throw new Error(`${file.name}: A raw trace is required. trace_digest and bench outputs are not supported in this version.`);
-          traces.push({name: file.name, doc});
-        }
+  function finishLoading(job) {
+    job.worker?.terminate();
+    if (job.url) URL.revokeObjectURL(job.url);
+    if (loading === job) loading = null;
+    job.resolve();
+    updateSession();
+  }
+  function stopLoading() {
+    if (loading) finishLoading(loading);
+  }
+  function stopAnalysis() {
+    stopLoading(); clearTimeout(resizeTimer); hideTip();
+    state.data = state.analysis = state.batch = state.frameStats = null;
+    state.groups = []; state.samples = []; state.chartPoints = []; state.slowest = [];
+    state.selected = 0; state.search = '';
+    for (const id of ['stats', 'frame-chart', 'timeline', 'thread-bars', 'hot-rows', 'insights', 'slow-buttons', 'capture-picker', 'warnings', 'event-detail', 'tooltip']) $(id).replaceChildren();
+    $('source-name').textContent = 'No capture loaded'; $('source-meta').textContent = 'Open a saved capture or load a synthetic demo.';
+    $('source-badge').textContent = 'Idle'; $('source-badge').className = 'badge neutral';
+    $('footer-meta').textContent = 'Offline analysis · no capture loaded';
+    $('search').value = ''; $('file-input').value = '';
+    for (const id of ['error', 'warnings', 'capture-picker-wrap', 'download-demo']) $(id).hidden = true;
+    $('error').textContent = '';
+    updateSession();
+  }
+  function loadFiles(fileList) {
+    const files = Array.from(fileList); if (!files.length) return Promise.resolve();
+    stopLoading(); hideTip(); $('error').hidden = true;
+    return new Promise(resolve => {
+      const job = {resolve, worker: null, url: null}; loading = job; updateSession();
+      try {
+        const code = $('trace-model').textContent + '\n' + $('trace-loader').textContent;
+        job.url = URL.createObjectURL(new Blob([code], {type: 'text/javascript'}));
+        job.worker = new Worker(job.url);
+        job.worker.onmessage = ({data}) => {
+          if (loading !== job) return;
+          finishLoading(job);
+          try { if (data.error) throw new Error(data.error); setGroups(data.groups); }
+          catch (error) { showError(error); }
+        };
+        job.worker.onerror = event => {
+          event.preventDefault();
+          if (loading !== job) return;
+          finishLoading(job); showError(new Error(event.message || 'The capture could not be loaded.'));
+        };
+        job.worker.onmessageerror = () => {
+          if (loading !== job) return;
+          finishLoading(job); showError(new Error('The parsed capture could not be transferred. Use a shorter capture.'));
+        };
+        job.worker.postMessage(files);
+      } catch (error) {
+        finishLoading(job); showError(error);
       }
-      const records = summaries.flatMap(s => s.rows);
-      const groups = traces.length ? traces.map(t => M.trace(t.doc, t.name, records)) : summaries.flatMap(s => M.intervals(s.rows, s.name));
-      if (!groups.length) throw new Error('No supported capture was found.');
-      setGroups(groups);
-    } catch (error) { showError(error); }
-    finally { button.disabled = false; button.textContent = 'Open capture'; $('file-input').value = ''; }
+      $('file-input').value = '';
+    });
+  }
+  function captureSetup() {
+    const mode = $('capture-mode').value, active = mode !== 'off';
+    $('capture-delay').disabled = mode !== 'timed';
+    $('capture-events').disabled = $('capture-gpu').disabled = !active;
+    const delay = $('capture-delay');
+    if (mode === 'timed' && !delay.checkValidity()) {
+      $('launch-command').textContent = 'Enter a whole-number delay from 0 through 86400 seconds.';
+      $('copy-launch').disabled = true; return;
+    }
+    $('copy-launch').disabled = false;
+    let command = "python 'C:\\path\\AnyPS5\\tools\\trace-lab\\capture.py' launch --mode " + mode;
+    if (active) {
+      command += ' --seconds 15 --events ' + $('capture-events').value;
+      if (mode === 'timed') command += ' --delay ' + Number(delay.value);
+      if ($('capture-gpu').checked) command += ' --gpu-details';
+    }
+    $('launch-command').textContent = command + " -- '.\\app.exe'";
+    $('capture-explanation').textContent = mode === 'off' ? 'Off clears inherited trace and GPU profiling settings for the new game process. It leaves your shell environment unchanged.' : mode === 'manual' ? 'Launch armed. The launcher prints a trigger command; run it in another terminal when the scene is ready. AnyPS5 then records one 15-second window. Use a local output directory.' : 'AnyPS5 records one 15-second window after the chosen delay from its first present.';
+    $('copy-status').textContent = '';
+  }
+  async function copyLaunch() {
+    const text = $('launch-command').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      $('copy-status').textContent = 'Command copied.';
+    } catch {
+      const range = document.createRange(); range.selectNodeContents($('launch-command'));
+      const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+      $('copy-status').textContent = 'Command selected. Press Ctrl+C to copy.';
+    }
   }
   function download(name, data) {
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json;charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
@@ -309,17 +378,18 @@
   $('open-files').onclick = () => $('file-input').click();
   $('file-input').onchange = e => loadFiles(e.target.files);
   $('help-toggle').onclick = () => { $('capture-help').hidden = !$('capture-help').hidden; $('help-toggle').setAttribute('aria-expanded', String(!$('capture-help').hidden)); };
-  $('load-demo').onclick = () => setGroups([M.demo($('demo-mode').value)]);
+  $('load-demo').onclick = () => { stopLoading(); setGroups([M.demo($('demo-mode').value)]); };
+  $('stop-analysis').onclick = stopAnalysis;
   $('capture-picker').onchange = e => setData(state.groups[Number(e.target.value)]);
-  $('target').onchange = e => { state.target = Number(e.target.value); render(); };
+  $('target').onchange = e => { state.target = Number(e.target.value); if (state.frameStats) state.frameStats.over = state.data.frames.reduce((total, frame) => total + (frame.ms > 1000 / state.target ? 1 : 0), 0); render(); };
   $('zoom').onchange = e => { state.zoom = Number(e.target.value); state.batch = null; render(); };
-  $('search').oninput = e => { state.search = e.target.value.trim(); renderTimeline(state.analysis); renderTables(state.analysis); };
+  $('search').oninput = e => { if (!state.data) return; state.search = e.target.value.trim(); renderTimeline(state.analysis); renderTables(state.analysis); };
   $('frame-slider').oninput = e => select(Number(e.target.value));
   $('prev-frame').onclick = () => select(state.selected - 1); $('next-frame').onclick = () => select(state.selected + 1);
   $('frame-chart').onkeydown = e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); select(state.selected + (e.key === 'ArrowRight' ? 1 : -1)); } };
   $('download-demo').onclick = () => download(`anyps5-synthetic-${state.data.mode}.json`, state.data.document);
   $('export-report').onclick = () => {
-    const d = state.data;
+    const d = state.data; if (!d) return;
     const report = {format: 'trace-lab/1', source: d.filename, synthetic: d.demo, target_fps: state.target, warnings: d.warnings, incomplete: d.incomplete, identity: d.summary};
     if (d.type === 'trace') { const a = state.analysis; report.capture = M.stats(d, 1000 / state.target); report.range_ms = [a.begin, a.end]; report.threads = a.threads.map(t => ({name: t.name, tid: t.tid, work_scope_ms: t.working, wait_scope_ms: t.waiting, untraced_ms: t.unknown})); report.inclusive_phases = a.phases; }
     else report.interval = d.rows[state.selected];
@@ -330,7 +400,9 @@
   for (const name of ['dragleave', 'drop']) drop.addEventListener(name, e => { e.preventDefault(); drop.classList.remove('drag'); });
   drop.addEventListener('drop', e => loadFiles(e.dataTransfer.files));
   window.addEventListener('dragover', e => e.preventDefault()); window.addEventListener('drop', e => e.preventDefault());
-  let resizeTimer; window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (state.data) render(); }, 150); });
-  setGroups([M.demo('compile')]);
-  window.TraceLabApp = {loadFiles, getData: () => state.data, getAnalysis: () => state.analysis};
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); if (state.data && !loading) resizeTimer = setTimeout(render, 150); });
+  for (const id of ['capture-mode', 'capture-delay', 'capture-events', 'capture-gpu']) $(id).addEventListener('input', captureSetup);
+  $('copy-launch').onclick = copyLaunch;
+  captureSetup(); stopAnalysis();
+  window.TraceLabApp = {loadFiles, stopAnalysis, getData: () => state.data, getAnalysis: () => state.analysis, getStatus: () => loading ? 'loading' : state.data ? 'loaded' : 'idle'};
 })();

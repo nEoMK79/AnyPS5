@@ -319,7 +319,21 @@ With `APS5_TRACE_SUMMARY_EVERY` set, the recorder writes a timestamp pair per ba
 
 ### Offline trace analyzer
 
-Open [AnyPS5-Profiler.html](../../tools/trace-lab/AnyPS5-Profiler.html) in Chrome or Edge, then select a raw `aps5-trace-*.json.gz` and its companion `aps5-summary.jsonl`. The self-contained page processes files locally and needs no GPU, server or package installation. Uncompressed trace JSON is also accepted. Its initial scenarios are synthetic, not measurements of a title or host.
+Open [AnyPS5-Profiler.html](../../tools/trace-lab/AnyPS5-Profiler.html) in Chrome or Edge, then select a raw `aps5-trace-*.json.gz` and its companion `aps5-summary.jsonl`. The self-contained page processes saved files locally and needs no GPU, server or package installation. It starts idle without loading a demo or monitoring a game. Uncompressed trace JSON is also accepted. Optional demo scenarios are synthetic, not measurements of a title or host.
+
+Loading uses a temporary browser worker. `Stop & unload` terminates that worker, clears the plots and releases capture references for browser garbage collection. It does not stop recording in a running title. After loading, calculation and drawing happen on interaction; frame statistics and chart samples are reused between selections. There is no periodic game polling.
+
+`Capture controls` prepares a PowerShell command for [capture.py](../../tools/trace-lab/capture.py). From the converted title directory, with the launcher's path adjusted, use:
+
+```
+python /path/to/AnyPS5/tools/trace-lab/capture.py launch --mode off -- ./app.exe
+python /path/to/AnyPS5/tools/trace-lab/capture.py launch --mode timed --delay 30 --seconds 15 -- ./app.exe
+python /path/to/AnyPS5/tools/trace-lab/capture.py launch --mode manual --seconds 15 -- ./app.exe
+```
+
+The launcher defaults to `off`. It removes inherited window, interval, benchmark and trigger settings, plus `APS5_PROFILE_GPU`, `APS5_PROFILE_GPU_DRAWS`, `APS5_PROFILE_DRAW` and draw-program tracing, only from the child environment. Other settings and the parent environment are preserved. `timed` schedules one window after the selected delay from the first present. `manual` arms one window with a unique, initially absent `APS5_TRACE_TRIGGER_FILE` and prints a `capture.py trigger <path>` command to run in another terminal when the scene is ready. The trigger command creates the file exclusively and never replaces an existing file. The native recorder checks it on presents at most once per 250 ms while waiting. Use a local filesystem; network metadata can stall presentation. Each traced launch writes into its own directory under `trace-output`, or `--output-dir`.
+
+The duration is 15 seconds by default (`--seconds` accepts 1 through 60). The window closes at the first present at least that duration after opening; it is not a wall-clock deadline independent of the title. The game continues, and an unfinished window is not written if the game exits. No periodic summaries or benchmark capture are enabled by the launcher. `--gpu-details` enables command-class ranges. `--events 65536` reduces the applicable event buffers from about 10 MiB to about 2.5 MiB per thread, at the cost of earlier truncation; other buffers and output formatting still use memory. Buffers can remain allocated and GPU timestamp overhead can continue outside the recording window. Relaunch with `--mode off` for an untraced session; these controls do not change the native recorder's lifetime or add an in-game toggle.
 
 Selecting a frame updates the thread timeline, wait coverage and inclusive event table. Thread IDs remain separate even when names match. Related recorder batches can be highlighted. The selected range can be exported as JSON. Opening periodic summaries alone shows interval statistics without reconstructing individual frames or thread events. Build, environment, host, resolution or title changes and restarted clocks split the records into independent segments. `aps5-bench/1` and processed `trace_digest` output are not accepted.
 
@@ -333,6 +347,7 @@ Rebuild the HTML with Python 3 and run the calculation tests with Node 22 or new
 python tools/trace-lab/build.py
 python tools/trace-lab/build.py --check
 node --test tools/trace-lab/test_model.cjs
+python tools/trace-lab/test_capture.py
 ```
 
 The fixtures originate from `tools/tests/test_trace_digest.py` and its Python digest output; they are synthetic test data.
